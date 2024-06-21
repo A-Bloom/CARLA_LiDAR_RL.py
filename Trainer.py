@@ -1,4 +1,5 @@
 from stable_baselines3 import PPO
+from stable_baselines3.common import utils
 import os
 from Env import CarEnv
 import time
@@ -10,6 +11,7 @@ model = PPO('MlpPolicy', env, verbose=0, learning_rate=0.001)
 timeSteps = 50000
 
 # check_env(env)
+# print(utils.get_device(device='auto'))
 
 model.learn(total_timesteps=timeSteps, reset_num_timesteps=False)
 

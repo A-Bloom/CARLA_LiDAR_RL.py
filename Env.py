@@ -44,7 +44,7 @@ class CarEnv(gym.Env):
     def __init__(self):
         super(CarEnv, self).__init__()
 
-        self.action_space = spaces.MultiDiscrete([3, 3])
+        self.action_space = spaces.MultiDiscrete([21, 21])
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(Lidar_Field, Lidar_Field), dtype=np.float32)
 
         self.client = carla.Client(host, port)
@@ -118,43 +118,16 @@ class CarEnv(gym.Env):
 
         self.step_counter += 1
 
-        throttle = self.tesla.get_control().throttle
-        reverse = self.tesla.get_control().reverse
-        steer = self.tesla.get_control().steer
+        throttle = abs((action[0]-10)/10)
+        steer = (action[1]-10)/10
 
-        if action[0] == 1:
+        # print("Throttle:" + str(throttle))
+        # print("Steer:" + str(steer))
 
-            if self.abs_throttle < 0.95:
-                self.abs_throttle = self.abs_throttle + 0.1
-
-                if self.abs_throttle >= 0:
-                    throttle = throttle + 0.1
-                    reverse = False
-                else:
-                    throttle = throttle - 0.1
-                    reverse = True
-
-        elif action[0] == 2:
-
-            if self.abs_throttle > -0.95:
-                self.abs_throttle = self.abs_throttle - 0.1
-
-                if self.abs_throttle <= 0:
-                    throttle = throttle + 0.1
-                    reverse = True
-                else:
-                    throttle = throttle - 0.1
-                    reverse = False
-
-        if action[1] == 1:
-
-            if steer < 0.975:
-                steer = steer + 0.05
-
-        elif action[1] == 2:
-
-            if steer > -0.975:
-                steer = steer - 0.05
+        if action[0] >= 10:
+            reverse = False
+        else:
+            reverse = True
 
         self.tesla.apply_control(carla.VehicleControl(steer=steer, reverse=reverse, throttle=throttle))
 
@@ -167,6 +140,7 @@ class CarEnv(gym.Env):
         #         reward = abs_velocity/100
         #     else:
         #         reward = 0.5 - abs_velocity/100
+
         if not reverse:
             reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
                                          (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
@@ -186,9 +160,12 @@ class CarEnv(gym.Env):
             reward = -1
             done = True
 
-        if Verbose and (self.step_counter % 5000 == 0) and (self.step_counter != 0):
+        if self.tesla.get_location().z < -20:
+            done = True
+
+        if Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
-            print("Throttle action: " + str(action[0]) + "\nThrottle: " + str(self.abs_throttle) +
+            print("Throttle action: " + str(action[0]) + "\nThrottle: " + str(throttle) +
                   "\nSteering Action: " + str(action[1]) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
 
         if Show:
