@@ -169,7 +169,7 @@ class CarEnv(gym.Env):
         #         reward = 0.5 - abs_velocity/100
         if not reverse:
             reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
-                                         (self.tesla.get_location().y - self.init_location.y) ** 2) / 200)
+                                         (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
 
             if ExtraVerbose and (self.step_counter % 5000 == 0) and (self.step_counter != 0):
                 print(reward)
