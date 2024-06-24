@@ -11,7 +11,7 @@ model = PPO('MlpPolicy', env, verbose=0, learning_rate=0.001)
 timeSteps = 50000
 
 # check_env(env)
-# print(utils.get_device(device='auto'))
+print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
 model.learn(total_timesteps=timeSteps, reset_num_timesteps=False)
 

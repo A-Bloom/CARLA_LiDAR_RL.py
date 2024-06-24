@@ -25,12 +25,12 @@ Verbose = True
 ExtraVerbose = False
 Lidar_Depth = '30'
 Lidar_Resolution = 4  # Points per meter
-Lidar_Field = int(Lidar_Depth)*2*Lidar_Resolution+1
+Lidar_Field = int(Lidar_Depth) * 2 * Lidar_Resolution + 1
 Lidar_PPS = '9000'  # Points/Second
 Lidar_RPS = '7'  # Rotations/Second
-Points_Per_Observation = int(int(Lidar_PPS)/int(Lidar_RPS))
+Points_Per_Observation = int(int(Lidar_PPS) / int(Lidar_RPS))
 
-
+# host = '10.230.117.122'
 host = '127.0.0.1'
 port = 2000
 
@@ -118,8 +118,8 @@ class CarEnv(gym.Env):
 
         self.step_counter += 1
 
-        throttle = abs((action[0]-10)/10)
-        steer = (action[1]-10)/10
+        throttle = abs((action[0] - 10) / 10)
+        steer = (action[1] - 10) / 10
 
         # print("Throttle:" + str(throttle))
         # print("Steer:" + str(steer))
@@ -143,15 +143,14 @@ class CarEnv(gym.Env):
 
         if not reverse:
             reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
-                                         (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
+                                (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
 
-            if ExtraVerbose and (self.step_counter % 5000 == 0) and (self.step_counter != 0):
+            if Verbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
                 print(reward)
                 print("X Location:" + str(self.tesla.get_location().x))
                 print("X Init Location:" + str(self.init_location.x))
                 print("Y Location:" + str(self.tesla.get_location().y))
                 print("Y Init Location:" + str(self.init_location.y))
-
 
         if reward >= 1:
             self.init_location = self.tesla.get_location()
@@ -163,14 +162,17 @@ class CarEnv(gym.Env):
         if self.tesla.get_location().z < -20:
             done = True
 
-        if Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
+        if Verbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
             print("Throttle action: " + str(action[0]) + "\nThrottle: " + str(throttle) +
                   "\nSteering Action: " + str(action[1]) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
 
         if Show:
             cv.imshow('Top View', self.camera_data['image'])
-            cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1]*255)))
+            cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
+            if Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
+                print("Lidar Image Saved To File!")
+                cv.imwrite(f"Output/{int(time.time())}.jpg", np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
             cv.waitKey(1)
 
         return self.lidar_data[1], reward, False, done, {}
@@ -178,16 +180,17 @@ class CarEnv(gym.Env):
     def reset(self, **kwargs):
 
         self.collision_sensed = False
-        self.init_location = self.tesla.get_location()
 
         self.tesla.apply_control(carla.VehicleControl(steer=0, reverse=False, throttle=0))
         self.tesla.set_target_velocity(carla.Vector3D(x=0, y=0, z=0))
         try:
             self.tesla.set_location(random.choice(self.spawn_points).location)
-        except:
+        finally:
             pass
 
-        time.sleep(0.1)
+        self.world.tick()
+
+        self.init_location = self.tesla.get_location()
 
         if Verbose:
             print("Reset")
@@ -198,13 +201,13 @@ class CarEnv(gym.Env):
 
         raw = np.copy(np.frombuffer(points.raw_data, dtype=np.dtype('f4')))
 
-        x_points = (((Lidar_Field-1)/2) + np.around(raw[1::4] * Lidar_Resolution)).astype(dtype=int)
-        y_points = (((Lidar_Field-1)/2) - np.around(raw[::4] * Lidar_Resolution)).astype(dtype=int)
+        x_points = (((Lidar_Field - 1) / 2) + np.around(raw[1::4] * Lidar_Resolution)).astype(dtype=int)
+        y_points = (((Lidar_Field - 1) / 2) - np.around(raw[::4] * Lidar_Resolution)).astype(dtype=int)
 
         self.lidar_data[0, y_points, x_points] = 1
         self.lidar_index += len(x_points)
 
-        if self.lidar_index >= 100:
+        if self.lidar_index >= 200:
             self.lidar_data[1] = self.lidar_data[0]
             self.lidar_data[0] = np.zeros((Lidar_Field, Lidar_Field), dtype=np.dtype('f4'))
             self.lidar_index = 0
@@ -213,10 +216,6 @@ class CarEnv(gym.Env):
             print("x_points:" + str(len(x_points)))
             print("y_points:" + str(len(y_points)))
             print("index:" + str(self.lidar_index))
-
-        if ExtraVerbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
-            print("Lidar Array Saved To File!")
-            np.savetxt(f"Output/Current_Lidar{int(time.time())}", self.lidar_data[1])
 
     def collided(self, data):
         self.collision_sensed = True

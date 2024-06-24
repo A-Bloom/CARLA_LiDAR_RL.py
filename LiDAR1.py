@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+import time
 import random
 import math
 import numpy as np
@@ -18,7 +19,7 @@ except IndexError:
 import carla
 
 host = '127.0.0.1'
-# host = '10.230.117.122'
+# host = '10.230.117.254'
 port = 2000
 
 client = carla.Client(host, port)
@@ -62,6 +63,7 @@ camera = world.spawn_actor(camera_bp, camera_init_transform, attach_to=tesla)
 collision = world.spawn_actor(collision_bp, lidar_init_transform, attach_to=tesla)
 
 init_location = tesla.get_location()
+
 
 def create_image(pic, data_dict):
     data_dict['image'] = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))
@@ -184,12 +186,17 @@ while True:
         distance = (math.sqrt((tesla.get_location().x - init_location.x) ** 2 +
                             (tesla.get_location().y - init_location.y) ** 2))
         print("Distance Traveled: " + str(distance) + " meters")
+        print("X Location:" + str(tesla.get_location().x))
+        print("X Init Location:" + str(init_location.x))
+        print("Y Location:" + str(tesla.get_location().y))
+        print("Y Init Location:" + str(init_location.y))
 
 
     elif keyed == ord('r'):
         tesla.set_location(random.choice(spawn_points).location)
         tesla.apply_control(carla.VehicleControl(throttle=0, steer=0))
         abs_throttle = 0
+        time.sleep(1)
         init_location = tesla.get_location()
 
     elif keyed == ord('m'):
