@@ -76,7 +76,7 @@ class CarEnv(gym.Env):
             try:
                 self.tesla = self.world.spawn_actor(self.tesla_bp, random.choice(self.spawn_points))
                 break
-            except:
+            finally:
                 print("Retrying Spawn")
 
         self.abs_throttle = 0
@@ -145,7 +145,7 @@ class CarEnv(gym.Env):
             reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
                                 (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
 
-            if Verbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
+            if ExtraVerbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
                 print(reward)
                 print("X Location:" + str(self.tesla.get_location().x))
                 print("X Init Location:" + str(self.init_location.x))
@@ -170,7 +170,7 @@ class CarEnv(gym.Env):
         if Show:
             cv.imshow('Top View', self.camera_data['image'])
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
-            if Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
+            if ExtraVerbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
                 print("Lidar Image Saved To File!")
                 cv.imwrite(f"Output/{int(time.time())}.jpg", np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
             cv.waitKey(1)
