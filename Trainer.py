@@ -11,7 +11,7 @@ model = PPO('MlpPolicy', env, verbose=0, learning_rate=0.001)
 cycles = 10
 timeSteps = 50
 
-# check_env(env)
+#  check_env(env)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 print("Beginning cycle 1")
 
