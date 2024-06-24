@@ -207,7 +207,7 @@ class CarEnv(gym.Env):
         self.lidar_data[0, y_points, x_points] = 1
         self.lidar_index += len(x_points)
 
-        if self.lidar_index >= 200:
+        if self.lidar_index >= 250:
             self.lidar_data[1] = self.lidar_data[0]
             self.lidar_data[0] = np.zeros((Lidar_Field, Lidar_Field), dtype=np.dtype('f4'))
             self.lidar_index = 0

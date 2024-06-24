@@ -1,6 +1,4 @@
-import torch
+cycles = 5
 
-print(torch.cuda.is_available())
-print(torch.__version__)
-print(torch.cuda.get_device_properties(0))
-print(torch.randn(1).cuda())
+for i in range(cycles):
+    print("Hi")
