@@ -121,9 +121,6 @@ class CarEnv(gym.Env):
         throttle = abs((action[0] - 10) / 10)
         steer = (action[1] - 10) / 10
 
-        # print("Throttle:" + str(throttle))
-        # print("Steer:" + str(steer))
-
         if action[0] >= 10:
             reverse = False
         else:
@@ -137,11 +134,11 @@ class CarEnv(gym.Env):
             # Velocity in m/s; 14 m/s is about 31.3 mph
             abs_velocity = math.sqrt(velocity.x**2 + velocity.y**2)
             if abs_velocity < 50:
-                reward = abs_velocity/50
+                reward = abs_velocity/100
             else:
-                reward = 0.5 - abs_velocity/50
+                reward = 0.5 - abs_velocity/100
 
-        reward = reward - abs(steer)
+        reward = reward - abs(steer)*reward
 
         # if not reverse:
         #     reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +

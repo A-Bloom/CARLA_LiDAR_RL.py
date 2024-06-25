@@ -1,7 +1,7 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common import utils
 import os
-from Env import CarEnv
+from Env1 import CarEnv
 import time
 
 env = CarEnv()
