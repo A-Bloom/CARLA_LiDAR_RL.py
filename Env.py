@@ -91,7 +91,7 @@ class CarEnv(gym.Env):
         self.lidar_bp.set_attribute('lower_fov', '0')
         self.lidar_bp.set_attribute('points_per_second', Lidar_PPS)
         self.lidar = self.world.spawn_actor(self.lidar_bp, self.lidar_init_transform, attach_to=self.tesla)
-        self.lidar_data = np.zeros((2, Lidar_Field, Lidar_Field))
+        self.lidar_data = np.zeros((2, Lidar_Field, Lidar_Field), dtype=np.float32)
         self.blanks = np.zeros((Lidar_Field, Lidar_Field))
         self.lidar_index = 0
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
@@ -131,26 +131,28 @@ class CarEnv(gym.Env):
 
         self.tesla.apply_control(carla.VehicleControl(steer=steer, reverse=reverse, throttle=throttle))
 
-        # if not reverse:
-        #
-        #     velocity = self.tesla.get_velocity()
-        #     # Velocity in m/s; 14 m/s is about 31.3 mph
-        #     abs_velocity = math.sqrt(velocity.x**2 + velocity.y**2)
-        #     if abs_velocity < 50:
-        #         reward = abs_velocity/100
-        #     else:
-        #         reward = 0.5 - abs_velocity/100
-
         if not reverse:
-            reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
-                                (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
 
-            if ExtraVerbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
-                print(reward)
-                print("X Location:" + str(self.tesla.get_location().x))
-                print("X Init Location:" + str(self.init_location.x))
-                print("Y Location:" + str(self.tesla.get_location().y))
-                print("Y Init Location:" + str(self.init_location.y))
+            velocity = self.tesla.get_velocity()
+            # Velocity in m/s; 14 m/s is about 31.3 mph
+            abs_velocity = math.sqrt(velocity.x**2 + velocity.y**2)
+            if abs_velocity < 50:
+                reward = abs_velocity/50
+            else:
+                reward = 0.5 - abs_velocity/50
+
+        reward = reward - abs(steer)
+
+        # if not reverse:
+        #     reward = (math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
+        #                         (self.tesla.get_location().y - self.init_location.y) ** 2) / 300)
+        #
+        #     if ExtraVerbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
+        #         print(reward)
+        #         print("X Location:" + str(self.tesla.get_location().x))
+        #         print("X Init Location:" + str(self.init_location.x))
+        #         print("Y Location:" + str(self.tesla.get_location().y))
+        #         print("Y Init Location:" + str(self.init_location.y))
 
         if reward >= 1:
             self.init_location = self.tesla.get_location()
