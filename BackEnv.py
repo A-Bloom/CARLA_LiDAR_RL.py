@@ -1,4 +1,6 @@
 import random
+import __main__
+from pathlib import Path
 import numpy as np
 import cv2 as cv
 import gymnasium as gym
@@ -32,7 +34,7 @@ class BackEnv(gym.Env):
 
         self.settings = self.world.get_settings()
         self.settings.synchronous_mode = True
-        self.settings.fixed_delta_seconds = 0.01
+        self.settings.fixed_delta_seconds = self.delta_seconds
         self.world.apply_settings(self.settings)
 
         self.bps = self.world.get_blueprint_library()
@@ -132,3 +134,6 @@ class BackEnv(gym.Env):
 
     def create_image(self, pic):
         if self.Show:self.camera_data = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))
+
+    def name(self):
+        return Path(__main__.__file__).stem

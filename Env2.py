@@ -1,9 +1,11 @@
-# In this Env the observation space is a voxel grid and the action space is [21, 21]
-# the reward function is based on velocity with a discount for turning
+# Action Space: 21 discrete steer actions from -1 to 1
+# Observation Space:  Blank grid with ones signifying obstacles Precision of 1/4 meter
+# Reward Function: Reward for throttle, throttle is decreased proportionally to steer
 
 import math
 import numpy as np
 import cv2 as cv
+from pathlib import Path
 from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
@@ -19,6 +21,7 @@ class CarEnv(BackEnv):
         self.Lidar_Resolution = 4  # Points per meter
         self.Lidar_PPS = '9000'  # Points/Second
         self.Lidar_RPS = '7'  # Rotations/Second
+        self.delta_seconds = 0.05  # Lower number leads to higher precision/longer train time
 
         # host = '10.230.117.122'
         self.host = '127.0.0.1'
@@ -26,7 +29,7 @@ class CarEnv(BackEnv):
 
         super(CarEnv, self).__init__()
 
-        self.action_space = spaces.MultiDiscrete([21, 21])
+        self.action_space = spaces.Discrete(21)
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
                                             dtype=np.float32)
 
@@ -35,34 +38,16 @@ class CarEnv(BackEnv):
         self.world.tick()
 
         done = False
-        reward = 0
 
         self.step_counter += 1
 
-        throttle = abs((action[0] - 10) / 10)
-        steer = (action[1] - 10) / 10
+        steer = (action - 10) / 10
 
-        if action[0] >= 10:
-            reverse = False
-        else:
-            reverse = True
+        throttle = 0.5 - 0.5*abs(steer)
 
-        self.tesla.apply_control(carla.VehicleControl(steer=steer, reverse=reverse, throttle=throttle))
+        self.tesla.apply_control(carla.VehicleControl(steer=steer, reverse=False, throttle=throttle))
 
-        if not reverse:
-
-            velocity = self.tesla.get_velocity()
-            # Velocity in m/s; 14 m/s is about 31.3 mph
-            abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
-            if abs_velocity < 50:
-                reward = abs_velocity / 100
-            else:
-                reward = 0.5 - abs_velocity / 100
-
-        reward = reward - abs(steer) * reward
-
-        if reward >= 1:
-            self.init_location = self.tesla.get_location()
+        reward = throttle
 
         if self.collision_sensed:
             reward = -1
@@ -73,8 +58,7 @@ class CarEnv(BackEnv):
 
         if self.Verbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
-            print("Throttle action: " + str(action[0]) + "\nThrottle: " + str(throttle) +
-                  "\nSteering Action: " + str(action[1]) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
+            print("Steering Action: " + str(action) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
 
         if self.Show:
             cv.imshow('Top View', self.camera_data)
@@ -104,3 +88,6 @@ class CarEnv(BackEnv):
 
     def close(self):
         super(CarEnv, self).close()
+
+    def name(self):
+        return Path(__file__).stem

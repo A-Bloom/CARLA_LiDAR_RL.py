@@ -1,15 +1,29 @@
 import matplotlib.pyplot as plt
 
 
-a = [2,13,4]
+a = [1,1,2,2]
 
-b = [2,5,2]
+b = [0.1,0.2,0.1,0.2]
 
-plt.plot(a,b, 'o')
+c = [5,2,10,4]
 
-plt.xlabel('lr')
-plt.ylabel('reward')
 
-plt.savefig('Output/lr.jpg')
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+ax.scatter(a, b, c, marker='o')
+
+ax.set_xlabel('env')
+ax.set_ylabel('lr')
+ax.set_zlabel('reward')
+
+# plt.savefig('Output/lr.jpg')
 
 plt.show()
+
+import __main__
+
+from pathlib import Path
+
+print(Path(__main__.__file__).name)
+print(Path(__main__.__file__).stem)

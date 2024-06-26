@@ -1,7 +1,9 @@
-# In this Env the observation space is a blank grid with 1's for obstacles and the action space is [21, 21]
-# the reward function is based on velocity with a discount for turning
+# Action Space: 21 discrete throttle actions from 1 reverse to 1 forward 21 discrete steer actions from -1 to 1
+# Observation Space:  Blank grid with ones signifying obstacles Precision of 1/4 meter
+# Reward Function: Rewards for going faster up to 50 m/s with a discount for turning Max reward of 0.5
 
 import math
+from pathlib import Path
 import numpy as np
 import cv2 as cv
 from BackEnv import BackEnv
@@ -19,6 +21,7 @@ class CarEnv(BackEnv):
         self.Lidar_Resolution = 4  # Points per meter
         self.Lidar_PPS = '9000'  # Points/Second
         self.Lidar_RPS = '7'  # Rotations/Second
+        self.delta_seconds = 0.05  # Lower number leads to higher precision/longer train time
 
         # host = '10.230.117.122'
         self.host = '127.0.0.1'
@@ -81,6 +84,7 @@ class CarEnv(BackEnv):
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
             cv.waitKey(1)
 
+
         return self.lidar_data[1], reward, False, done, {}
 
     def create_lidar_plane(self, points):
@@ -104,3 +108,6 @@ class CarEnv(BackEnv):
 
     def close(self):
         super(CarEnv, self).close()
+
+    def name(self):
+        return Path(__file__).stem
