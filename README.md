@@ -1,7 +1,10 @@
-Using RL and only a LiDAR sensor to control a car and avoid obstacles in CARLA.
+## Using RL and 2D LiDAR observations to control a car and avoid obstacles in CARLA.
+
+The BackEnv contains top level functions that all the other environments need to function.<br>
+All the other environments inherit the BackEnv function and add specific Action Spaces, Observation Spaces, and Reward Functions
 
 This table lists the various features of each environment:
-<br> All Environments give -1 for crashing
+<br> All Environments give -1 reward for crashing.
 
 | Environment | Action Space                                                                                        | Observation Space                                                    | Reward Function                                                                         |
 |-------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
@@ -13,3 +16,5 @@ This table lists the various features of each environment:
 | Env6        |                                                                                                     |                                                                      |                                                                                         |
 | Env7        |                                                                                                     |                                                                      |                                                                                         |
 | Env8        |                                                                                                     |                                                                      |                                                                                         |
+
+The SuperTrainer is used to test multiple environments with multiple hyperparameters and then graph them against performance.

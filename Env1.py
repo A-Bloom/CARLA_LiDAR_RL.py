@@ -1,4 +1,4 @@
-# In this Env the observation space is a voxel grid and the action space is [21, 21]
+# In this Env the observation space is a blank grid with 1's for obstacles and the action space is [21, 21]
 # the reward function is based on velocity with a discount for turning
 
 import math
