@@ -1,17 +1,17 @@
+# In this Env the observation space is a voxel grid and the action space is [21, 21]
+# the reward function is based on velocity with a discount for turning
+
 import math
 import numpy as np
 import cv2 as cv
-import gymnasium as gym
+from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
-import BackEnv
 
 
-class CarEnv(gym.Env):
+class CarEnv(BackEnv):
 
     def __init__(self):
-
-        super(CarEnv, self).__init__()
 
         self.Show = True
         self.Verbose = True
@@ -24,7 +24,7 @@ class CarEnv(gym.Env):
         self.host = '127.0.0.1'
         self.port = 2000
 
-        BackEnv.setup(self)
+        super(CarEnv, self).__init__()
 
         self.action_space = spaces.MultiDiscrete([21, 21])
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
@@ -77,8 +77,9 @@ class CarEnv(gym.Env):
                   "\nSteering Action: " + str(action[1]) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
 
         if self.Show:
-            cv.imshow('Top View', self.camera_data['image'])
+            cv.imshow('Top View', self.camera_data)
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
+            cv.waitKey(1)
 
         return self.lidar_data[1], reward, False, done, {}
 
@@ -98,15 +99,8 @@ class CarEnv(gym.Env):
             self.lidar_index = 0
 
     def reset(self, **kwargs):
-        BackEnv.reset(self)
-
+        super(CarEnv, self).reset()
         return self.lidar_data[1], {}
 
-    def collided(self, data):
-        self.collision_sensed = True
-
-    def create_image(self, pic):
-        if self.Show:self.camera_data['image'] = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))
-
     def close(self):
-        BackEnv.close(self)
+        super(CarEnv, self).close()
