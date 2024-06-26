@@ -6,7 +6,7 @@ from Env1 import CarEnv
 
 env = CarEnv()
 
-path = "Models/50"
+path = "Models/500"
 
 model = PPO.load(path, env)
 
@@ -14,6 +14,6 @@ model = PPO.load(path, env)
 
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
-print(evaluate_policy(model, env, 10))
+print(evaluate_policy(model, env, 1))
 
 env.close()

@@ -18,8 +18,9 @@ except IndexError:
 
 import carla
 
-host = '127.0.0.1'
-# host = '10.230.117.254'
+host = '127.0.0.1'  #localhost
+# host = '128.252.83.117'  # External IP
+# host = '10.230.117.122'  # Internal IP
 port = 2000
 
 client = carla.Client(host, port)
