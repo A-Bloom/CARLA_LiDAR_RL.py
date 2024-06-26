@@ -11,6 +11,9 @@ class BackEnv(gym.Env):
 
         super(BackEnv, self).__init__()
 
+        cv.namedWindow('Top View', cv.WINDOW_AUTOSIZE)
+        cv.namedWindow('Lidar View', cv.WINDOW_AUTOSIZE)
+
         self.Lidar_Field = int(self.Lidar_Depth) * 2 * self.Lidar_Resolution + 1
         self.Points_Per_Observation = int(int(self.Lidar_PPS) / int(self.Lidar_RPS))
 
@@ -69,7 +72,7 @@ class BackEnv(gym.Env):
         self.camera = self.world.spawn_actor(self.camera_bp, self.camera_init_transform, attach_to=self.tesla)
         self.image_w = self.camera_bp.get_attribute("image_size_x").as_int()
         self.image_h = self.camera_bp.get_attribute("image_size_y").as_int()
-        self.camera_data = {'image': np.zeros((self.image_h, self.image_w, 4))}
+        self.camera_data = np.zeros((self.image_h, self.image_w, 4))
         self.camera.listen(lambda data: self.create_image(data))
 
         self.collision = self.world.spawn_actor(self.collision_bp, self.lidar_init_transform, attach_to=self.tesla)
@@ -97,6 +100,8 @@ class BackEnv(gym.Env):
         if self.Verbose:
             print("Reset")
 
+        return 0, {}
+
 
     def close(self):
         cv.destroyAllWindows()
@@ -121,3 +126,9 @@ class BackEnv(gym.Env):
         self.settings.synchronous_mode = False
         self.settings.fixed_delta_seconds = None
         self.world.apply_settings(self.settings)
+
+    def collided(self, data):
+        self.collision_sensed = True
+
+    def create_image(self, pic):
+        if self.Show:self.camera_data = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))

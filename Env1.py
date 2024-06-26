@@ -4,7 +4,6 @@
 import math
 import numpy as np
 import cv2 as cv
-import gymnasium as gym
 from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
@@ -25,16 +24,11 @@ class CarEnv(BackEnv):
         self.host = '127.0.0.1'
         self.port = 2000
 
-
         super(CarEnv, self).__init__()
 
         self.action_space = spaces.MultiDiscrete([21, 21])
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
                                             dtype=np.float32)
-
-        if self.Show:
-            cv.namedWindow('Top View', cv.WINDOW_AUTOSIZE)
-            cv.namedWindow('Lidar View', cv.WINDOW_AUTOSIZE)
 
     def step(self, action):
 
@@ -83,8 +77,9 @@ class CarEnv(BackEnv):
                   "\nSteering Action: " + str(action[1]) + "\nSteering: " + str(steer) + "\nReward: " + str(reward))
 
         if self.Show:
-            cv.imshow('Top View', self.camera_data['image'])
+            cv.imshow('Top View', self.camera_data)
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
+            cv.waitKey(1)
 
         return self.lidar_data[1], reward, False, done, {}
 
@@ -106,12 +101,6 @@ class CarEnv(BackEnv):
     def reset(self, **kwargs):
         super(CarEnv, self).reset()
         return self.lidar_data[1], {}
-
-    def collided(self, data):
-        self.collision_sensed = True
-
-    def create_image(self, pic):
-        if self.Show:self.camera_data['image'] = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))
 
     def close(self):
         super(CarEnv, self).close()
