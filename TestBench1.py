@@ -20,10 +20,3 @@ ax.set_zlabel('reward')
 # plt.savefig('Output/lr.jpg')
 
 plt.show()
-
-import __main__
-
-from pathlib import Path
-
-print(Path(__main__.__file__).name)
-print(Path(__main__.__file__).stem)

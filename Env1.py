@@ -17,7 +17,7 @@ class CarEnv(BackEnv):
 
         self.Show = True
         self.Verbose = True
-        self.Lidar_Depth = '30'
+        # self.Lidar_Depth = '30'
         self.Lidar_Resolution = 4  # Points per meter
         self.Lidar_PPS = '9000'  # Points/Second
         self.Lidar_RPS = '7'  # Rotations/Second
@@ -84,6 +84,7 @@ class CarEnv(BackEnv):
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
             cv.waitKey(1)
 
+        print(self.Lidar_Depth)
 
         return self.lidar_data[1], reward, False, done, {}
 

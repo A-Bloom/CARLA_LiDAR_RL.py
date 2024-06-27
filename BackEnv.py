@@ -7,7 +7,18 @@ import gymnasium as gym
 import carla
 
 
+# noinspection PyArgumentList
 class BackEnv(gym.Env):
+
+    Lidar_Depth = '128'
+    Lidar_Resolution = 4
+    Lidar_PPS = '9000'
+    Lidar_RPS = '7'
+    host = '127.0.0.1'
+    port = 2000
+    delta_seconds = 0.05
+    Verbose = True
+    Show = True
 
     def __init__(self):
 
@@ -103,7 +114,6 @@ class BackEnv(gym.Env):
             print("Reset")
 
         return 0, {}
-
 
     def close(self):
         cv.destroyAllWindows()
