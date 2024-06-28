@@ -55,7 +55,6 @@ class CarEnv(BackEnv):
         if not reverse:
 
             velocity = self.tesla.get_velocity()
-            # Velocity in m/s; 14 m/s is about 31.3 mph
             abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
             if abs_velocity < 50:
                 reward = abs_velocity / 100

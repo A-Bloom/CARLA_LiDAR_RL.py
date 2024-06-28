@@ -19,6 +19,7 @@ class BackEnv(gym.Env):
     delta_seconds = 0.05
     Verbose = True
     Show = True
+    Points_Per_Observation = 250
 
     def __init__(self):
 
@@ -28,7 +29,6 @@ class BackEnv(gym.Env):
         cv.namedWindow('Lidar View', cv.WINDOW_AUTOSIZE)
 
         self.Lidar_Field = int(self.Lidar_Depth) * 2 * self.Lidar_Resolution + 1
-        self.Points_Per_Observation = int(int(self.Lidar_PPS) / int(self.Lidar_RPS))
 
         self.client = carla.Client(self.host, self.port)
         self.client.set_timeout(10.0)
@@ -77,6 +77,7 @@ class BackEnv(gym.Env):
         self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
         self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field))
         self.lidar_index = 0
+        self.points = np.zeros((2, self.Points_Per_Observation, 2), dtype=np.float32)
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
         self.camera_init_transform = carla.Transform(carla.Location(z=30), carla.Rotation(pitch=-90))
@@ -91,7 +92,7 @@ class BackEnv(gym.Env):
         self.collision = self.world.spawn_actor(self.collision_bp, self.lidar_init_transform, attach_to=self.tesla)
         self.collision_sensed = False
         self.collision.listen(lambda data: self.collided(data))
-        print("BackEnv initializing")
+        print("BackEnv Initializing")
 
     def step(self, action):
         return 0, 0, False, False, {}

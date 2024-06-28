@@ -3,12 +3,12 @@ from stable_baselines3 import PPO
 from stable_baselines3.common import utils
 from stable_baselines3.common.env_checker import check_env
 import os
-from Env1 import CarEnv
+from Env3 import CarEnv
 import time
 
 env = CarEnv()
 
-print(env.name())
+print(env.name() + " Initializing")
 
 # model = DroQ('MlpPolicy', env, learning_rate=0.001, learning_starts=10000, gradient_steps=20, policy_delay=20,
 #             dropout_rate=0.01, layer_norm=True)
