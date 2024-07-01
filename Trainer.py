@@ -22,7 +22,7 @@ print("Beginning cycle 1")
 
 model.learn(total_timesteps=timeSteps)
 
-models_dir = f"Output/models/{Path(__file__).stem}/"
+models_dir = f"Output/Models/{Path(__file__).stem}/"
 timestamp = datetime.now()
 file_name = (env.name() + timestamp.strftime("_%m_%d_%H_%M"))
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
+import time
 
 
 class MidEnv(BackEnv):
@@ -118,6 +119,9 @@ class MidEnv(BackEnv):
                 self.init_location = self.tesla.get_location()
 
             self.reward = velocity_reward + displacement_reward
+        else:
+            abs_velocity = 0
+            displacement = 0
 
         if self.collision_sensed:
             self.reward = -1
@@ -133,6 +137,7 @@ class MidEnv(BackEnv):
             print("Brake Action: " + str(action[2]) + " Brake: " + str(brake))
             print("Velocity: " + str(abs_velocity) + " Displacement: " + str(displacement))
             print("Reward: " + str(self.reward))
+            # cv.imwrite(f"Output/Images/{time.time()}.jpg", np.dstack( (self.blanks, self.blanks, self.lidar_data[1] * 255)))
 
         if self.Show:
             cv.imshow('Top View', self.camera_data)
@@ -157,10 +162,9 @@ class MidEnv(BackEnv):
 
             self.lidar_data[0, y_points, x_points] = 1
 
-            if self.lidar_index >= self.Points_Per_Observation:
+            if self.lidar_index > self.Points_Per_Observation:
                 self.lidar_data[1] = self.lidar_data[0]
                 self.lidar_data[0] = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.dtype('f4'))
-                # self.lidar_index = 0
 
             if self.observation_format == 'grid':
                 self.observation = self.lidar_data[1]
@@ -170,12 +174,13 @@ class MidEnv(BackEnv):
                 self.points[0][self.lidar_index-length:] = ((np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation-self.lidar_index)])/int(self.Lidar_Depth)
                 self.points[1] = self.points[0]
                 self.points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
-                self.lidar_index = 0
             else:
                 self.points[0][(self.lidar_index - length):self.lidar_index] = np.dstack((x_raw, y_raw))/int(self.Lidar_Depth)
 
             self.observation = self.points[1]
 
+        if self.lidar_index > self.Points_Per_Observation:
+            self.lidar_index = 0
 
     def reset(self, **kwargs):
         super(MidEnv, self).reset()
