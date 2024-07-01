@@ -32,7 +32,6 @@ model.save(f"{models_dir}/{file_name}")
 
 for i in range(cycles-1):
     print("Beginning cycle " + str(i+2))
-    model.load(f"{models_dir}/{file_name}")
     model.learn(total_timesteps=timeSteps)
     model.save(f"{models_dir}/{file_name}")
 

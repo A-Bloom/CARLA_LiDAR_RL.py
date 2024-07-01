@@ -106,16 +106,18 @@ class MidEnv(BackEnv):
 
             velocity = self.tesla.get_velocity()
             abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
-            speed = self.reward_distribution[0] * (abs_velocity / self.speed_limit)
+            velocity_reward = self.reward_distribution[0] * abs_velocity / self.speed_limit
             if abs_velocity > self.speed_limit:
-                speed = self.reward_distribution[0]-speed
+                velocity_reward = self.reward_distribution[0] - velocity_reward
 
-            displacement = self.reward_distribution[1]*(math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
-                                (self.tesla.get_location().y - self.init_location.y) ** 2) / self.displacement_reset)
-            if displacement > self.reward_distribution[1]:
+            displacement = math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
+                                (self.tesla.get_location().y - self.init_location.y) ** 2)
+            displacement_reward = self.reward_distribution[1] * displacement / self.displacement_reset
+
+            if displacement > self.displacement_reset:
                 self.init_location = self.tesla.get_location()
 
-            self.reward = speed+displacement
+            self.reward = velocity_reward + displacement_reward
 
         if self.collision_sensed:
             self.reward = -1
@@ -124,11 +126,12 @@ class MidEnv(BackEnv):
         if self.tesla.get_location().z < -20:
             self.done = True
 
-        if self.Verbose and (self.step_counter % 500 == 0) and (self.step_counter != 0):
+        if self.Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
             print("Steering Action: " + str(action[0]) + " Steering: " + str(steer))
             print("Throttle Action: " + str(action[1]) + " Throttle: " + str(throttle))
             print("Brake Action: " + str(action[2]) + " Brake: " + str(brake))
+            print("Velocity: " + str(abs_velocity) + " Displacement: " + str(displacement))
             print("Reward: " + str(self.reward))
 
         if self.Show:

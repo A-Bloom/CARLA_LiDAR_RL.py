@@ -10,9 +10,6 @@ import time
 envs = [Env1(), Env2()]
 
 
-
-
-
 for env in envs:
 
     lr = 0.001
@@ -36,7 +33,6 @@ for env in envs:
 
         for i in range(cycles - 1):
             print("Beginning cycle " + str(i + 2))
-            model.load(f"{models_dir}/{int(lr*1000)}")
             model.learn(total_timesteps=timeSteps)
             model.save(f"{models_dir}/{int(lr*1000)}")
 
