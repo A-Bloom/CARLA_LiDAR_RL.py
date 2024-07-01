@@ -94,7 +94,7 @@ class MidEnv(BackEnv):
                     elif self.action_possibilities > 1:
                         reverse = True
                 if self.action_possibilities == 3:
-                    brake = action[2]
+                    brake = action[2].astype(np.float64)
 
         self.tesla.apply_control(carla.VehicleControl(throttle=throttle, steer=steer, brake=brake, reverse=reverse))
 

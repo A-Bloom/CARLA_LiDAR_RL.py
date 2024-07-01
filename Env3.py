@@ -35,7 +35,7 @@ class CarEnv(MidEnv):
         # Action Options
         self.action_format = 'continuous'  # 'discrete' or 'continuous'
         self.discrete_actions = 21  # Only for discrete steer and or throttle, must be odd!
-        self.action_possibilities = 3  # 0 for steer, 1 for throttle forward and steer,
+        self.action_possibilities = 1  # 0 for steer, 1 for throttle forward and steer,
         # 2 for throttle and steer, 3 for throttle steer and break.
         self.steer_cap = 1  # 0 to 1
         self.throttle_cap = 1  # 0 to 1
