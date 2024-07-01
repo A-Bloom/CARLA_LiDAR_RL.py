@@ -77,8 +77,6 @@ class BackEnv(gym.Env):
         self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
         self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field))
         self.lidar_index = 0
-        self.points = np.zeros((2, self.Points_Per_Observation, 2), dtype=np.float32)
-        self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
         self.camera_init_transform = carla.Transform(carla.Location(z=30), carla.Rotation(pitch=-90))
         self.camera_bp.set_attribute('image_size_x', '768')
@@ -92,7 +90,7 @@ class BackEnv(gym.Env):
         self.collision = self.world.spawn_actor(self.collision_bp, self.lidar_init_transform, attach_to=self.tesla)
         self.collision_sensed = False
         self.collision.listen(lambda data: self.collided(data))
-        print("BackEnv Initializing")
+        print("Initializing BackEnv")
 
     def step(self, action):
         return 0, 0, False, False, {}

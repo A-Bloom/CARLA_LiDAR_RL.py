@@ -30,6 +30,8 @@ class MidEnv(BackEnv):
 
         super(MidEnv, self).__init__()
 
+        self.lidar.listen(lambda data: self.create_lidar_plane(data))
+
         if self.Points_Per_Observation == 0:
             self.Points_Per_Observation = round(int(self.Lidar_PPS) / int(self.Lidar_RPS))
 
@@ -38,6 +40,7 @@ class MidEnv(BackEnv):
             self.observation = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(self.Points_Per_Observation, 2),
                                                 dtype=np.float32)
+            self.points = np.zeros((2, self.Points_Per_Observation, 2), dtype=np.float32)
         elif self.observation_format == 'grid':
             self.observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
             self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
@@ -57,7 +60,7 @@ class MidEnv(BackEnv):
 
         self.discrete_augmentor = round((self.discrete_actions - 1)/2)
 
-        print("MidEnv Initializing")
+        print("Initializing MidEnv")
 
     def step(self, action):
 
