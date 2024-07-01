@@ -175,8 +175,5 @@ class MidEnv(BackEnv):
         super(MidEnv, self).reset()
         return self.observation, {}
 
-    def close(self):
-        super(MidEnv, self).close()
-
     def name(self):
         return Path(__file__).stem

@@ -44,16 +44,5 @@ class CarEnv(MidEnv):
 
         super(CarEnv, self).__init__()
 
-    def step(self, action):
-        super(CarEnv, self).step(action)
-        return self.observation, self.reward, False, self.done, {}
-
-    def reset(self, **kwargs):
-        super(CarEnv, self).reset()
-        return self.observation, {}
-
-    def close(self):
-        super(CarEnv, self).close()
-
     def name(self):
         return Path(__file__).stem
