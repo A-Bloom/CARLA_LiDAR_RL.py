@@ -25,8 +25,9 @@ class BackEnv(gym.Env):
 
         super(BackEnv, self).__init__()
 
-        cv.namedWindow('Top View', cv.WINDOW_AUTOSIZE)
-        cv.namedWindow('Lidar View', cv.WINDOW_AUTOSIZE)
+        if self.Show:
+            cv.namedWindow('Top View', cv.WINDOW_AUTOSIZE)
+            cv.namedWindow('Lidar View', cv.WINDOW_AUTOSIZE)
 
         self.Lidar_Field = int(self.Lidar_Depth) * 2 * self.Lidar_Resolution + 1
 
