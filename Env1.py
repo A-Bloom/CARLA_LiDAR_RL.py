@@ -17,8 +17,8 @@ class CarEnv(MidEnv):
         self.delta_seconds = 0.05  # Lower number leads to higher precision/longer train time
 
         # Debugging Options
-        self.Show = True
-        self.Verbose = True
+        self.Show = False
+        self.Verbose = False
 
         # LiDAR/Observation Options
         self.Lidar_Depth = '30'

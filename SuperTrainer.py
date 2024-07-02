@@ -17,8 +17,8 @@ log_dir = f"{folder_name}/TBLogs"
 os.makedirs(log_dir, exist_ok=True)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
-cycles = 2
-timeSteps = 10
+cycles = 10
+timeSteps = 5000
 
 if platform == "win32":
     os.popen(f"py -m tensorboard.main --logdir={log_dir}")
@@ -35,7 +35,7 @@ for names in envs:
     print(f"Initializing {env.name()}")
 
     lr = 0.001
-    while lr < 0.013:
+    while lr < 0.102:
 
         model = PPO('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir)
         tb_dir = f"{env.name()}_{int(lr*1000)}"
@@ -49,7 +49,7 @@ for names in envs:
             os.makedirs(model_dir, exist_ok=True)
             model.save(f"{model_dir}/{i*timeSteps}")
 
-        lr = lr + 0.005
+        lr = lr + 0.01
         del model
 
     env.close()

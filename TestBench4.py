@@ -1,4 +1,5 @@
-def hi(a):
-    print(a)
+import numpy as np
 
-locals()["hi"]("hi!!!!!!!!!!!!!!!!")
+words = np.array(["one","two","three","four"])
+mask = np.array([1,2,4])-1
+print(words[mask])
