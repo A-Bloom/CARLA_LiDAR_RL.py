@@ -46,6 +46,10 @@ class MidEnv(BackEnv):
             self.observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
             self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
                                                 dtype=np.float32)
+        elif self.observation_format == 'image':
+            self.observation = np.zeros((self.Lidar_Field, self.Lidar_Field, 3), dtype=np.float32)
+            self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field, 3),
+                                                dtype=np.float32)
         else:
             warnings.warn("Invalid observation format! Exiting...")
             exit(-1)
@@ -141,7 +145,7 @@ class MidEnv(BackEnv):
 
         if self.Show:
             cv.imshow('Top View', self.camera_data)
-            cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1] * 255)))
+            cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
             cv.waitKey(1)
 
         return self.observation, self.reward, False, self.done, {}
@@ -156,7 +160,7 @@ class MidEnv(BackEnv):
 
         self.lidar_index += length
 
-        if self.observation_format == 'grid' or self.View:
+        if self.observation_format == 'grid' or self.observation_format == 'image' or self.View:
             x_points = (((self.Lidar_Field - 1) / 2) + np.around(x_raw * self.Lidar_Resolution)).astype(dtype=int)
             y_points = (((self.Lidar_Field - 1) / 2) - np.around(y_raw * self.Lidar_Resolution)).astype(dtype=int)
 
@@ -168,6 +172,8 @@ class MidEnv(BackEnv):
 
             if self.observation_format == 'grid':
                 self.observation = self.lidar_data[1]
+            elif self.observation_format == 'image':
+                self.observation = np.dstack((self.blanks, self.blanks, self.lidar_data[1]))
 
         if self.observation_format == 'points':
             if self.lidar_index > self.Points_Per_Observation:

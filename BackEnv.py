@@ -77,6 +77,7 @@ class BackEnv(gym.Env):
         self.lidar = self.world.spawn_actor(self.lidar_bp, self.lidar_init_transform, attach_to=self.tesla)
         self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
         self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field))
+        self.blanks[round(self.Lidar_Field/2-0.5)][round(self.Lidar_Field/2-0.5)] = 1
         self.lidar_index = 0
 
         self.camera_init_transform = carla.Transform(carla.Location(z=30), carla.Rotation(pitch=-90))

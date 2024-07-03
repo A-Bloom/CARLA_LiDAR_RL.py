@@ -26,11 +26,11 @@ timeSteps = 10
 #check_env(env)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
-if platform == "win32":
-    os.popen(f"py -m tensorboard.main --logdir={log_dir}/{file_name}_0")
+if platform == "linux":
+    os.popen(f"python -m tensorboard.main --logdir={log_dir}/{file_name}_0")
     print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
-elif platform == "linux":
-    Popen(f"python -m tensorboard.main --logdir={log_dir}/{file_name}_0", creationflags=0x00000008)
+elif platform == "win32":
+    Popen(f"py -m tensorboard.main --logdir={log_dir}/{file_name}_0", creationflags=0x00000008)
     print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
 
 

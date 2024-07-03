@@ -17,14 +17,14 @@ log_dir = f"{folder_name}/TBLogs"
 os.makedirs(log_dir, exist_ok=True)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
-cycles = 10
+cycles = 100
 timeSteps = 5000
 
-if platform == "win32":
-    os.popen(f"py -m tensorboard.main --logdir={log_dir}")
+if platform == "linux":
+    os.popen(f"python -m tensorboard.main --logdir={log_dir}")
     print(f"Opening TensorBoard at {log_dir}")
-elif platform == "linux":
-    Popen(f"python -m tensorboard.main --logdir={log_dir}", creationflags=0x00000008)
+elif platform == "win32":
+    Popen(f"py -m tensorboard.main --logdir={log_dir}", creationflags=0x00000008)
     print(f"Opening TensorBoard at {log_dir}")
 
 
