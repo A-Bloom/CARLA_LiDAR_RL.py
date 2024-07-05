@@ -17,22 +17,23 @@ log_dir = f"Output/Logs/{Path(__file__).stem}"
 timestamp = datetime.now()
 file_name = (env.name() + timestamp.strftime("_%m_%d_%H_%M"))
 os.makedirs(log_dir, exist_ok=True)
+device = "auto"
 
-model = PPO('MlpPolicy', env, verbose=0, learning_rate=0.001, tensorboard_log=log_dir)
+if platform == "linux":
+    os.popen(f"python -m tensorboard.main --logdir={log_dir}/{file_name}_0")
+    print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
+    device = "cuda:1"
+elif platform == "win32":
+    Popen(f"py -m tensorboard.main --logdir={log_dir}/{file_name}_0", creationflags=0x00000008)
+    print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
+
+model = PPO('MlpPolicy', env, verbose=0, learning_rate=0.001, tensorboard_log=log_dir, device=device)
 
 cycles = 2
 timeSteps = 10
 
 #check_env(env)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
-
-if platform == "linux":
-    os.popen(f"python -m tensorboard.main --logdir={log_dir}/{file_name}_0")
-    print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
-elif platform == "win32":
-    Popen(f"py -m tensorboard.main --logdir={log_dir}/{file_name}_0", creationflags=0x00000008)
-    print(f"Opening TensorBoard at {log_dir}/{file_name}_0")
-
 
 
 for i in range(1, cycles + 1):

@@ -1,5 +1,3 @@
-import numpy as np
+import subprocess
 
-words = np.array(["one","two","three","four"])
-mask = np.array([1,2,4])-1
-print(words[mask])
+subprocess.Popen(r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\CARLA_0.9.15\CarlaUE4.exe")

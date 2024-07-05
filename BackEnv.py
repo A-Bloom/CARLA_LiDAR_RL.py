@@ -5,6 +5,8 @@ import numpy as np
 import cv2 as cv
 import gymnasium as gym
 import carla
+import subprocess
+import time
 
 
 # noinspection PyArgumentList

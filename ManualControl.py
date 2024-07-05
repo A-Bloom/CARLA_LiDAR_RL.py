@@ -6,19 +6,20 @@ import random
 import math
 import numpy as np
 import cv2 as cv
+import subprocess
 
 
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
         sys.version_info.major,
-        sys.version_info.miqnor,
+        sys.version_info.minor,
         'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
     pass
 
 import carla
 
-host = '127.0.0.1'  #localhost
+host = '127.0.0.1'  # localhost
 # host = '128.252.83.117'  # External IP
 # host = '10.230.117.122'  # Internal IP
 port = 2000
@@ -28,9 +29,10 @@ client.set_timeout(20.0)
 
 
 world = client.load_world(random.choice(client.get_available_maps()))
-# settings = world.get_settings()
-# settings.synchronous_mode = True
-# world.apply_settings(settings)
+settings = world.get_settings()
+settings.synchronous_mode = True
+settings.fixed_delta_seconds = 0.05
+world.apply_settings(settings)
 
 spawn_points = world.get_map().get_spawn_points()
 number_of_spawn_points = len(spawn_points)
@@ -116,6 +118,18 @@ cv.waitKey(1)
 while True:
     cv.imshow('Top View', camera_data['image'])
     cv.imshow('Lidar View', lidar_data['points'])
+
+    try:
+        world.tick()
+    except RuntimeError:
+        print("Connection to Server Lost Attempting Reboot...")
+        subprocess.Popen(r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\CARLA_0.9.15\CarlaUE4.exe")
+        time.sleep(5)
+        try:
+            world.tick()
+        except RuntimeError:
+            print("Failed to Reconnect to Server, Shutting Down.")
+            keyed = ord('q')
 
     keyed = cv.waitKey(1)
     if keyed == ord('w'):
@@ -252,6 +266,6 @@ for i in range(walkers_len):
 
 
 # Reset world to asynchronous mode
-# settings.synchronous_mode = False
-# world.apply_settings(settings)
+settings.synchronous_mode = False
+world.apply_settings(settings)
 

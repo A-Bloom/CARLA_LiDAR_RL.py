@@ -16,6 +16,7 @@ folder_name = ("Output/" + Path(__file__).stem + timestamp.strftime("_%m_%d_%H_%
 log_dir = f"{folder_name}/TBLogs"
 os.makedirs(log_dir, exist_ok=True)
 print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
+device = "auto"
 
 cycles = 100
 timeSteps = 5000
@@ -23,6 +24,7 @@ timeSteps = 5000
 if platform == "linux":
     os.popen(f"python -m tensorboard.main --logdir={log_dir}")
     print(f"Opening TensorBoard at {log_dir}")
+    device = "cuda:1"
 elif platform == "win32":
     Popen(f"py -m tensorboard.main --logdir={log_dir}", creationflags=0x00000008)
     print(f"Opening TensorBoard at {log_dir}")
@@ -37,7 +39,7 @@ for names in envs:
     lr = 0.001
     while lr < 0.102:
 
-        model = PPO('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir)
+        model = PPO('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir,device=device)
         tb_dir = f"{env.name()}_{int(lr*1000)}"
         model_dir = f"{folder_name}/{env.name()}/{int(lr*1000)}"
         print(f"Learning rate of {lr}")

@@ -7,6 +7,7 @@ from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
 import time
+import subprocess
 
 
 class MidEnv(BackEnv):
@@ -69,7 +70,25 @@ class MidEnv(BackEnv):
 
     def step(self, action):
 
-        self.world.tick()
+        try:
+            self.world.tick()
+        except RuntimeError:
+            print("Connection to Server Lost Attempting Reboot...")
+            cv.destroyAllWindows()
+            time.sleep(10)
+            subprocess.Popen(r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\CARLA_0.9.15\CarlaUE4.exe")
+            time.sleep(20)
+            print("Slept")
+            self.__init__()
+            print("Reboot Successful!")
+
+            try:
+                self.world.tick()
+            except RuntimeError:
+                print("Failed to Reconnect to Server, Shutting Down.")
+                super(MidEnv, self).close()
+
+
         self.done = False
         self.step_counter += 1
         brake = 0
