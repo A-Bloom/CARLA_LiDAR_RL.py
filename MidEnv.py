@@ -8,6 +8,7 @@ from gymnasium import spaces
 import carla
 import time
 import subprocess
+import sys
 
 
 class MidEnv(BackEnv):
@@ -78,7 +79,10 @@ class MidEnv(BackEnv):
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
             time.sleep(10)
-            subprocess.Popen("CarlaPath.bat")
+            if sys.platform == 'win32':
+                subprocess.Popen("CarlaPath.bat")
+            else:
+                subprocess.Popen("sh CarlaPath.sh")
             time.sleep(20)
             print("Slept")
             self.__init__()
