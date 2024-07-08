@@ -1,12 +1,9 @@
 import random
-import __main__
 from pathlib import Path
 import numpy as np
 import cv2 as cv
 import gymnasium as gym
 import carla
-import subprocess
-import time
 
 
 # noinspection PyArgumentList
@@ -149,4 +146,4 @@ class BackEnv(gym.Env):
         if self.Show:self.camera_data = np.reshape(np.copy(pic.raw_data), (pic.height, pic.width, 4))
 
     def name(self):
-        return Path(__main__.__file__).stem
+        return Path(__file__).stem

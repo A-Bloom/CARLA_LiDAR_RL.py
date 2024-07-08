@@ -27,6 +27,8 @@ class MidEnv(BackEnv):
     reward_distribution = [0.5, 0.5]
     displacement_reset = 200
     Points_Per_Observation = 0
+    min_speed = 0
+    min_speed_discount = 0
 
     def __init__(self):
 
@@ -76,7 +78,7 @@ class MidEnv(BackEnv):
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
             time.sleep(10)
-            subprocess.Popen(r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\CARLA_0.9.15\CarlaUE4.exe")
+            subprocess.Popen("CarlaPath.bat")
             time.sleep(20)
             print("Slept")
             self.__init__()
@@ -145,6 +147,9 @@ class MidEnv(BackEnv):
         else:
             abs_velocity = 0
             displacement = 0
+
+        if abs_velocity < self.min_speed:
+            self.reward = self.min_speed_discount
 
         if self.collision_sensed:
             self.reward = -1

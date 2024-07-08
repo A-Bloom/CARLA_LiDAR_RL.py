@@ -4,7 +4,7 @@ from stable_baselines3.common.env_checker import check_env
 from subprocess import Popen
 import os
 from sys import platform
-from Env3 import CarEnv
+from Env1 import CarEnv
 from pathlib import Path
 from datetime import datetime
 
