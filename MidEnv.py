@@ -12,7 +12,6 @@ import sys
 
 
 class MidEnv(BackEnv):
-
     View = True
     observation_format = 'grid'
     action_format = 'discrete'
@@ -62,12 +61,13 @@ class MidEnv(BackEnv):
         if self.action_format == 'discrete':
             self.action_space = spaces.MultiDiscrete([self.discrete_actions, self.discrete_actions, 3])
         elif self.action_format == 'continuous':
-            self.action_space = spaces.Box(low=np.array([-1.0, -1.0, 0.0]), high=np.array([1.0, 1.0, 1.0]), dtype=np.float32)
+            self.action_space = spaces.Box(low=np.array([-1.0, -1.0, 0.0]), high=np.array([1.0, 1.0, 1.0]),
+                                           dtype=np.float32)
         else:
             warnings.warn("Invalid action format! Exiting...")
             exit(-1)
 
-        self.discrete_augmentor = round((self.discrete_actions - 1)/2)
+        self.discrete_augmentor = round((self.discrete_actions - 1) / 2)
 
         print("Initializing MidEnv")
 
@@ -78,11 +78,11 @@ class MidEnv(BackEnv):
         except RuntimeError:
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
-            time.sleep(10)
+            time.sleep(5)
             if sys.platform == 'win32':
                 subprocess.Popen("CarlaPath.bat")
             else:
-                subprocess.Popen("sh CarlaPath.sh")
+                subprocess.call(['sh', './CarlaPath.sh'])
             time.sleep(20)
             print("Slept")
             self.__init__()
@@ -94,7 +94,6 @@ class MidEnv(BackEnv):
                 print("Failed to Reconnect to Server, Shutting Down.")
                 super(MidEnv, self).close()
 
-
         self.done = False
         self.step_counter += 1
         brake = 0
@@ -102,25 +101,25 @@ class MidEnv(BackEnv):
 
         #Action function
         if self.action_format == 'discrete':
-            steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor)*self.steer_cap
+            steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor) * self.steer_cap
             if self.action_possibilities == 0:
                 throttle = self.constant_throttle * (1 - abs(steer)) * (1 - self.turn_throttle_reduction)
             elif self.action_possibilities > 0:
-                throttle = abs((action[1] - self.discrete_augmentor) / self.discrete_augmentor)*self.throttle_cap
+                throttle = abs((action[1] - self.discrete_augmentor) / self.discrete_augmentor) * self.throttle_cap
                 if action[1] < self.discrete_augmentor:
                     if self.action_possibilities == 1:
                         throttle = 0
                     elif self.action_possibilities > 1:
                         reverse = True
                 if self.action_possibilities == 3:
-                    brake = action[2]*0.5
+                    brake = action[2] * 0.5
 
         elif self.action_format == 'continuous':
-            steer = action[0]*self.steer_cap
+            steer = action[0] * self.steer_cap
             if self.action_possibilities == 0:
                 throttle = self.constant_throttle * (1 - abs(steer)) * (1 - self.turn_throttle_reduction)
             elif self.action_possibilities > 0:
-                throttle = abs(action[1])*self.throttle_cap
+                throttle = abs(action[1]) * self.throttle_cap
                 if action[1] < 0:
                     if self.action_possibilities == 1:
                         throttle = 0
@@ -141,34 +140,43 @@ class MidEnv(BackEnv):
                 velocity_reward = self.reward_distribution[0] - velocity_reward
 
             displacement = math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
-                                (self.tesla.get_location().y - self.init_location.y) ** 2)
+                                     (self.tesla.get_location().y - self.init_location.y) ** 2)
             displacement_reward = self.reward_distribution[1] * displacement / self.displacement_reset
 
             if displacement > self.displacement_reset:
                 self.init_location = self.tesla.get_location()
 
-            self.reward = velocity_reward + displacement_reward
+            target = math.sqrt((self.tesla.get_location().x - self.target_location.x) ** 2 +
+                               (self.tesla.get_location().y - self.target_location.y) ** 2)
+            target_reward = self.reward_distribution[2] * (1 - target / self.distance_to_target)
+
+            self.reward = velocity_reward + displacement_reward + target_reward
         else:
             abs_velocity = 0
             displacement = 0
+            target = self.distance_to_target
 
         if abs_velocity < self.min_speed:
             self.reward = self.min_speed_discount
+
+        if target < 0.5:
+            self.reward = 1
+            self.done = True
 
         if self.collision_sensed:
             self.reward = -1
             self.done = True
 
-        if self.tesla.get_location().z < -20:
+        if self.tesla.get_location().z < -20 or self.step_counter > 10000:
             self.done = True
 
         if self.Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
-            print("Steering Action: " + str(action[0]) + " Steering: " + str(steer))
-            print("Throttle Action: " + str(action[1]) + " Throttle: " + str(throttle))
-            print("Brake Action: " + str(action[2]) + " Brake: " + str(brake))
-            print("Velocity: " + str(abs_velocity) + " Displacement: " + str(displacement))
-            print("Reward: " + str(self.reward))
+            print(f"Steering Action: {action[0]} Steering: {steer}")
+            print(f"Throttle Action: {action[1]} Throttle: {throttle}")
+            print(f"Brake Action: {action[2]} Brake: {brake}")
+            print(f"Velocity: {abs_velocity} Displacement: {displacement}")
+            print(f"Distance to target: {target} Reward: {self.reward}")
             # cv.imwrite(f"Output/Images/{time.time()}.jpg", np.dstack( (self.blanks, self.blanks, self.lidar_data[1] * 255)))
 
         if self.Show:
@@ -205,11 +213,14 @@ class MidEnv(BackEnv):
 
         if self.observation_format == 'points':
             if self.lidar_index > self.Points_Per_Observation:
-                self.points[0][self.lidar_index-length:] = ((np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation-self.lidar_index)])/int(self.Lidar_Depth)
+                self.points[0][self.lidar_index - length:] = ((np.dstack((x_raw, y_raw)).squeeze())[
+                                                              :(self.Points_Per_Observation - self.lidar_index)]) / int(
+                    self.Lidar_Depth)
                 self.points[1] = self.points[0]
                 self.points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             else:
-                self.points[0][(self.lidar_index - length):self.lidar_index] = np.dstack((x_raw, y_raw))/int(self.Lidar_Depth)
+                self.points[0][(self.lidar_index - length):self.lidar_index] = np.dstack((x_raw, y_raw)) / int(
+                    self.Lidar_Depth)
 
             self.observation = self.points[1]
 

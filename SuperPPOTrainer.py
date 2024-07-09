@@ -5,9 +5,12 @@ from datetime import datetime
 from sys import platform
 from subprocess import Popen
 import os
-from Env1 import CarEnv as Env1
-from Env2 import CarEnv as Env2
-from Env3 import CarEnv as Env3
+from Envs.Env1 import CarEnv as Env1
+from Envs.Env2 import CarEnv as Env2
+from Envs.Env3 import CarEnv as Env3
+from Envs.Env4 import CarEnv as Env4
+from Envs.Env5 import CarEnv as Env5
+from Envs.Env6 import CarEnv as Env6
 
 envs = ["Env3", "Env1", "Env2"]
 

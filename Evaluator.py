@@ -1,8 +1,7 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common import utils
-from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.evaluation import evaluate_policy
-from Env3 import CarEnv
+from Envs.Env3 import CarEnv
 
 env = CarEnv()
 

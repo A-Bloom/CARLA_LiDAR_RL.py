@@ -4,6 +4,7 @@ import numpy as np
 import cv2 as cv
 import gymnasium as gym
 import carla
+import math
 
 
 # noinspection PyArgumentList
@@ -65,6 +66,9 @@ class BackEnv(gym.Env):
         self.abs_throttle = 0
         self.step_counter = 0
         self.init_location = self.tesla.get_location()
+        self.target_location = random.choice(self.spawn_points).location
+        self.distance_to_target = math.sqrt((self.target_location.x - self.init_location.x) ** 2 +
+                                            (self.target_location.y - self.init_location.y) ** 2)
 
         self.lidar_init_transform = carla.Transform(carla.Location(z=2))
         self.lidar_bp.set_attribute('channels', '1')
@@ -99,6 +103,8 @@ class BackEnv(gym.Env):
     def reset(self, **kwargs):
         self.collision_sensed = False
 
+        self.step_counter = 0
+
         self.tesla.apply_control(carla.VehicleControl(steer=0, reverse=False, throttle=0))
         self.tesla.set_target_velocity(carla.Vector3D(x=0, y=0, z=0))
         try:
@@ -109,9 +115,13 @@ class BackEnv(gym.Env):
         self.world.tick()
 
         self.init_location = self.tesla.get_location()
+        self.target_location = random.choice(self.spawn_points).location
+        self.distance_to_target = math.sqrt((self.target_location.x - self.init_location.x) ** 2 +
+                                            (self.target_location.y - self.init_location.y) ** 2)
 
         if self.Verbose:
             print("Reset")
+            print(f"Distance to Target: {self.distance_to_target}")
 
         return 0, {}
 

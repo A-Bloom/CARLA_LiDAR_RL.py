@@ -1,10 +1,9 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common import utils
-from stable_baselines3.common.env_checker import check_env
 from subprocess import Popen
 import os
 from sys import platform
-from Env1 import CarEnv
+from Envs.Env6 import CarEnv
 from pathlib import Path
 from datetime import datetime
 

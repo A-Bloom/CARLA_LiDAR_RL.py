@@ -1,7 +1,7 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common import utils
 from stable_baselines3.common.evaluation import evaluate_policy
-from Env2 import CarEnv
+from Envs.Env2 import CarEnv
 import os
 
 base_path = "Output/Run1/Env2"
