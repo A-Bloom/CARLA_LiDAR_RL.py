@@ -1,10 +1,10 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common import utils
 from stable_baselines3.common.evaluation import evaluate_policy
-from Envs.Env2 import CarEnv
+from Envs.Env1 import CarEnv
 import os
 
-base_path = "Output/Run1/Env2"
+base_path = "Output/Run2/Env1"
 
 zips = []
 
@@ -15,6 +15,7 @@ for sub_dir in dirs:
     for file in files:
         if file.endswith('.zip'):
             zips.append(f"{base_path}/{sub_dir}/{file}")
+print(zips)
 
 env = CarEnv()
 

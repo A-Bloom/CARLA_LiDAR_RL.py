@@ -23,7 +23,7 @@ print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 device = "auto"
 
 cycles = 50
-timeSteps = 50000
+timeSteps = 20000
 
 if platform == "linux":
     os.popen(f"python -m tensorboard.main --logdir={log_dir}")
@@ -40,8 +40,8 @@ for names in envs:
 
     print(f"Initializing {env.name()}")
 
-    lr = 0.001
-    while lr <= 0.091:
+    lr = 0.0001
+    while lr <= 0.1:
 
         model = DroQ('MlpPolicy', env, verbose=0, learning_rate=0.001, learning_starts=10000, tensorboard_log=log_dir,
                      device=device, gradient_steps=20, policy_delay=20, dropout_rate=0.01, layer_norm=True)
@@ -56,7 +56,7 @@ for names in envs:
             os.makedirs(model_dir, exist_ok=True)
             model.save(f"{model_dir}/{i*timeSteps}")
 
-        lr = lr + 0.03
+        lr = lr*10
         del model
 
     env.close()
@@ -73,7 +73,7 @@ print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 device = "auto"
 
 cycles = 50
-timeSteps = 5000
+timeSteps = 10000
 
 if platform == "linux":
     os.popen(f"python -m tensorboard.main --logdir={log_dir}")
@@ -90,8 +90,8 @@ for names in envs:
 
     print(f"Initializing {env.name()}")
 
-    lr = 0.001
-    while lr <= 0.091:
+    lr = 0.0001
+    while lr <= 0.1:
 
         model = PPO('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir,device=device)
         tb_dir = f"{env.name()}_{int(lr*1000)}"
@@ -105,7 +105,7 @@ for names in envs:
             os.makedirs(model_dir, exist_ok=True)
             model.save(f"{model_dir}/{i*timeSteps}")
 
-        lr = lr + 0.03
+        lr = lr*10
         del model
 
     env.close()
@@ -122,7 +122,7 @@ print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 device = "auto"
 
 cycles = 50
-timeSteps = 5000
+timeSteps = 10000
 
 if platform == "linux":
     os.popen(f"python -m tensorboard.main --logdir={log_dir}")
@@ -139,8 +139,8 @@ for names in envs:
 
     print(f"Initializing {env.name()}")
 
-    lr = 0.001
-    while lr <= 0.091:
+    lr = 0.0001
+    while lr <= 0.1:
 
         model = A2C('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir,device=device)
         tb_dir = f"{env.name()}_{int(lr*1000)}"
@@ -154,7 +154,7 @@ for names in envs:
             os.makedirs(model_dir, exist_ok=True)
             model.save(f"{model_dir}/{i*timeSteps}")
 
-        lr = lr + 0.03
+        lr = lr*10
         del model
 
     env.close()
@@ -171,7 +171,7 @@ print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 device = "auto"
 
 cycles = 50
-timeSteps = 5000
+timeSteps = 10000
 
 if platform == "linux":
     os.popen(f"python -m tensorboard.main --logdir={log_dir}")
@@ -188,8 +188,8 @@ for names in envs:
 
     print(f"Initializing {env.name()}")
 
-    lr = 0.001
-    while lr <= 0.091:
+    lr = 0.0001
+    while lr <= 0.1:
 
         model = SAC('MlpPolicy', env, verbose=0, learning_rate=lr, tensorboard_log=log_dir,device=device)
         tb_dir = f"{env.name()}_{int(lr*1000)}"
@@ -203,7 +203,7 @@ for names in envs:
             os.makedirs(model_dir, exist_ok=True)
             model.save(f"{model_dir}/{i*timeSteps}")
 
-        lr = lr + 0.03
+        lr = lr*10
         del model
 
     env.close()
