@@ -14,7 +14,7 @@ import sys
 class MidEnv(BackEnv, View=True,
              observation_format='grid',
              action_format='discrete',
-             action_possibilities=0,
+             action_possibilities=1,
              discrete_actions=21,
              steer_cap=1,
              constant_throttle=0.5,
@@ -23,7 +23,9 @@ class MidEnv(BackEnv, View=True,
              reward=0,
              done=False,
              speed_limit=45,
-             reward_distribution=[0.5, 0.5],
+             reward_for_speed=0,
+             reward_for_displacement=0.25,
+             reward_for_destination=0.75,
              displacement_reset=200,
              Points_Per_Observation=0,
              min_speed=0,
@@ -134,22 +136,22 @@ class MidEnv(BackEnv, View=True,
 
             velocity = self.tesla.get_velocity()
             abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
-            velocity_reward = self.reward_distribution[0] * abs_velocity / self.speed_limit
+            velocity_reward = self.reward_for_speed * abs_velocity / self.speed_limit
             if abs_velocity > self.speed_limit:
-                velocity_reward = self.reward_distribution[0] - velocity_reward
+                velocity_reward = self.reward_for_speed - velocity_reward
 
             displacement = math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
                                      (self.tesla.get_location().y - self.init_location.y) ** 2)
-            displacement_reward = self.reward_distribution[1] * displacement / self.displacement_reset
+            displacement_reward = self.reward_for_displacement * displacement / self.displacement_reset
 
             if displacement > self.displacement_reset:
                 self.init_location = self.tesla.get_location()
 
             target = math.sqrt((self.tesla.get_location().x - self.target_location.x) ** 2 +
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
-            target_reward = self.reward_distribution[2] * (1 - target / self.distance_to_target)
+            target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = velocity_reward + displacement_reward + target_reward
+            self.reward = (velocity_reward + displacement_reward + target_reward) ** self.exponentialize_reward
         else:
             abs_velocity = 0
             displacement = 0
