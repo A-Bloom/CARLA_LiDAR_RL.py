@@ -7,7 +7,8 @@ from subprocess import Popen
 import os
 
 
-def train(A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None, TD3_vars=None):
+def train(A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None, TD3_vars=None
+          ):
 
     print("stuff")
 

@@ -10,31 +10,70 @@ import time
 import subprocess
 import sys
 
+reward = 0
+done = False
 
-class MidEnv(BackEnv, View=True,
-             observation_format='grid',
-             action_format='discrete',
-             action_possibilities=1,
-             discrete_actions=21,
-             steer_cap=1,
-             constant_throttle=0.5,
-             turn_throttle_reduction=0,
-             throttle_cap=1,
-             reward=0,
-             done=False,
-             speed_limit=45,
-             reward_for_speed=0,
-             reward_for_displacement=0.25,
-             reward_for_destination=0.75,
-             displacement_reset=200,
-             Points_Per_Observation=0,
-             min_speed=0,
-             min_speed_discount=0):
 
-    def __init__(self):
+class MidEnv(BackEnv):
+
+    def __init__(self,
+                 Lidar_Depth='128',
+                 Lidar_Resolution=4,
+                 Lidar_PPS='9000',
+                 Lidar_RPS='7',
+                 host='127.0.0.1',
+                 port=2000,
+                 delta_seconds=0.05,
+                 Verbose=False,
+                 Show=False,
+                 observation_format='grid',
+                 action_format='discrete',
+                 action_possibilities=1,
+                 discrete_actions=21,
+                 steer_cap=1,
+                 constant_throttle=0.5,
+                 turn_throttle_reduction=0,
+                 throttle_cap=1,
+                 speed_limit=45,
+                 reward_for_speed=0,
+                 reward_for_displacement=0.25,
+                 reward_for_destination=0.75,
+                 displacement_reset=200,
+                 Points_Per_Observation=0,
+                 min_speed=0,
+                 min_speed_discount=0,
+                 exponentialize_reward=1
+                 ):
 
         super(MidEnv, self).__init__()
 
+        self.exponentialize_reward = exponentialize_reward
+        self.min_speed_discount = min_speed_discount
+        self.min_speed = min_speed
+        self.Points_Per_Observation = Points_Per_Observation
+        self.displacement_reset = displacement_reset
+        self.reward_for_destination = reward_for_destination
+        self.reward_for_displacement = reward_for_displacement
+        self.reward_for_speed = reward_for_speed
+        self.speed_limit = speed_limit
+        self.throttle_cap = throttle_cap
+        self.turn_throttle_reduction = turn_throttle_reduction
+        self.constant_throttle = constant_throttle
+        self.steer_cap = steer_cap
+        self.discrete_actions = discrete_actions
+        self.action_possibilities = action_possibilities
+        self.action_format = action_format
+        self.observation_format = observation_format
+        self.Show = Show
+        self.Verbose = Verbose
+        self.delta_seconds = delta_seconds
+        self.port = port
+        self.host = host
+        self.Lidar_RPS = Lidar_RPS
+        self.Lidar_PPS = Lidar_PPS
+        self.Lidar_Resolution = Lidar_Resolution
+        self.Lidar_Depth = Lidar_Depth
+        
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
         if self.Points_Per_Observation == 0:
@@ -197,7 +236,7 @@ class MidEnv(BackEnv, View=True,
 
         self.lidar_index += length
 
-        if self.observation_format == 'grid' or self.observation_format == 'image' or self.View:
+        if self.observation_format == 'grid' or self.observation_format == 'image' or self.Show:
             x_points = (((self.Lidar_Field - 1) / 2) + np.around(x_raw * self.Lidar_Resolution)).astype(dtype=int)
             y_points = (((self.Lidar_Field - 1) / 2) - np.around(y_raw * self.Lidar_Resolution)).astype(dtype=int)
 
