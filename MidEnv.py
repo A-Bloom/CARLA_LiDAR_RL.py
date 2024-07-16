@@ -11,24 +11,23 @@ import subprocess
 import sys
 
 
-class MidEnv(BackEnv):
-    View = True
-    observation_format = 'grid'
-    action_format = 'discrete'
-    action_possibilities = 0
-    discrete_actions = 21
-    steer_cap = 1
-    constant_throttle = 0.5
-    turn_throttle_reduction = 0
-    throttle_cap = 1
-    reward = 0
-    done = False
-    speed_limit = 45
-    reward_distribution = [0.5, 0.5]
-    displacement_reset = 200
-    Points_Per_Observation = 0
-    min_speed = 0
-    min_speed_discount = 0
+class MidEnv(BackEnv, View=True,
+             observation_format='grid',
+             action_format='discrete',
+             action_possibilities=0,
+             discrete_actions=21,
+             steer_cap=1,
+             constant_throttle=0.5,
+             turn_throttle_reduction=0,
+             throttle_cap=1,
+             reward=0,
+             done=False,
+             speed_limit=45,
+             reward_distribution=[0.5, 0.5],
+             displacement_reset=200,
+             Points_Per_Observation=0,
+             min_speed=0,
+             min_speed_discount=0):
 
     def __init__(self):
 
