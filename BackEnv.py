@@ -17,8 +17,8 @@ class BackEnv(gym.Env):
     host = '127.0.0.1'
     port = 2000
     delta_seconds = 0.05
-    Verbose = True
-    Show = True
+    Verbose = False
+    Show = False
     Points_Per_Observation = 250
 
     def __init__(self):

@@ -4,7 +4,7 @@ import numpy as np
 # This script takes all possible combinations of environmental and learning hyperparameters and tests them.
 # To just test one option, leave it as a single value. To test multiple, put it in an array.
 # Comment it out to use default values.
-# For examples see algorithm_options section.
+# For examples see algorithms and algorithm_options section.
 # This script will automatically ignore nonsensical possibilities like DDPG with a discrete action space
 
 #  Carla Connection Options
@@ -19,7 +19,8 @@ connection_options = {
 # Debugging Options
 debugging_options = {
     'Show': True,
-    'Verbose': False}
+    'Verbose': False
+}
 
 # LiDAR/Observation Options
 lidar_options = {
@@ -79,9 +80,10 @@ run_options = {
 # Reinforcement Learning Training Options. For more info see
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
+# All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
+algorithms = ['A2C', 'PPO'],  # This will test every other possibility with A2C and PPO
+
 algorithm_options = {
-    # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-    'algorithms': ['A2C', 'PPO'],  # This will test every other possibility with A2C and PPO
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
     'learning_rate': [0.0001, 0.001, 0.01, 0.1],
@@ -196,5 +198,6 @@ TD3_options = {
 }
 
 Trainer.train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-              SAC_vars=SAC_options, TD3_vars=TD3_options, **connection_options, **debugging_options,
-              **lidar_options, **reward_options, **run_options, **algorithm_options)
+              SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
+              debugging_vars=debugging_options,lidar_vars=lidar_options, reward_vars=reward_options,
+              algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)

@@ -1,13 +1,42 @@
-stuff = {'a':1,
-         'b':2}
-more_stuff = {'c': 3, 'd': 100}
+import copy
+
+a_stuff = {'a': 1, 'b': 'two', 'c': 3}
+b_stuff = {'d': [4, 5, 6], 'e': 7}
+c_stuff = {'f': 8, 'g': ['nine', 'ten']}
+d_stuff = None
 
 
-def afunc(a=2, b=3, c=4, d=5, e=6):
-    print(f"{a+b+c+d+e}")
+def variableUnion(*args, library=[]):
+    interim = []
+
+    for variable in args:
+        if type(variable) is dict:
+            for key, value in variable.items():
+                if type(value) is list:
+                    if len(library) == 0:
+                        for index in value:
+                            interim.append({key: index})
+                    else:
+                        for index in value:
+                            for i in range(len(library)):
+                                library[i].update({key: index})
+                            interim.extend(copy.deepcopy(library))
+
+                    library = interim
+                    interim = []
+                else:
+                    offset = 0
+                    if len(library) == 0:
+                        library.append({key: value})
+                        offset = 1
+                    for final in range(offset, len(library)):
+                        library[final].update({key: value})
+
+    return library
 
 
-for i in stuff:
-    locals()[i] = stuff[i]
+mid_stuff = variableUnion(b_stuff, d_stuff)
 
-print(b)
+final_stuff = variableUnion(c_stuff, library=mid_stuff)
+
+print(final_stuff)

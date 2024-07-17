@@ -1,6 +1,7 @@
 import MidEnv
+import carla
 
-MidEnv.MidEnv()
+Env = MidEnv.MidEnv()
 
 while True:
-    pass
+    Env.step([0, 0, 0])

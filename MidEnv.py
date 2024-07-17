@@ -25,7 +25,7 @@ class MidEnv(BackEnv):
                  port=2000,
                  delta_seconds=0.05,
                  Verbose=False,
-                 Show=False,
+                 Show=True,
                  observation_format='grid',
                  action_format='discrete',
                  action_possibilities=1,
@@ -44,8 +44,6 @@ class MidEnv(BackEnv):
                  min_speed_discount=0,
                  exponentialize_reward=1
                  ):
-
-        super(MidEnv, self).__init__()
 
         self.exponentialize_reward = exponentialize_reward
         self.min_speed_discount = min_speed_discount
@@ -73,7 +71,9 @@ class MidEnv(BackEnv):
         self.Lidar_PPS = Lidar_PPS
         self.Lidar_Resolution = Lidar_Resolution
         self.Lidar_Depth = Lidar_Depth
-        
+
+        super(MidEnv, self).__init__()
+
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
         if self.Points_Per_Observation == 0:
