@@ -15,7 +15,7 @@ def train(A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=
           experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=None):
 
     timestamp = datetime.now()
-    folder_name = ("Output/" + Path(__file__).stem + timestamp.strftime("_%m_%d_%H_%M"))
+    folder_name = ("Output/Experiment" + timestamp.strftime("_%m_%d_%H_%M"))
     log_dir = f"{folder_name}/TBLogs"
     os.makedirs(log_dir, exist_ok=True)
     print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
@@ -32,15 +32,21 @@ def train(A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=
     experiments = variableUnion(connection_vars, debugging_vars, lidar_vars, reward_vars)
 
     for run in range(experiment_runs):
+        print(f"Beginning run {run} of {experiment_runs}")
         for algorithm in algorithms:
             algorithm_factors = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars)
             for experiment in experiments:
                 env = MidEnv(**experiment)
                 for algorithm_factor in algorithm_factors:
-                    model = locals()[algorithm](env, **algorithm_factor)
+                    model = locals()[algorithm](env, device, **algorithm_factor)
+                    timestamp = datetime.now().strftime("_%m_%d_%H_%M")
+                    tb_dir = f"{algorithm}_{timestamp}"
+                    model_dir = f"{folder_name}/{algorithm}/{timestamp}"
                     for epoch in range(epochs):
+                        print(f"Beginning epoch {epoch} of {epochs}")
                         model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
-                        model.save()
+                        os.makedirs(model_dir, exist_ok=True)
+                        model.save(f"{model_dir}/{steps_per_epoch*epoch}")
 
 
 
