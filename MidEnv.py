@@ -2,7 +2,6 @@ import math
 import warnings
 import numpy as np
 import cv2 as cv
-from pathlib import Path
 from BackEnv import BackEnv
 from gymnasium import spaces
 import carla
@@ -10,27 +9,75 @@ import time
 import subprocess
 import sys
 
+reward = 0
+done = False
+
 
 class MidEnv(BackEnv):
-    View = True
-    observation_format = 'grid'
-    action_format = 'discrete'
-    action_possibilities = 0
-    discrete_actions = 21
-    steer_cap = 1
-    constant_throttle = 0.5
-    turn_throttle_reduction = 0
-    throttle_cap = 1
-    reward = 0
-    done = False
-    speed_limit = 45
-    reward_distribution = [0.5, 0.5]
-    displacement_reset = 200
-    Points_Per_Observation = 0
-    min_speed = 0
-    min_speed_discount = 0
 
-    def __init__(self):
+    def __init__(self,
+                 Lidar_Depth='128',
+                 Lidar_Resolution=4,
+                 Lidar_PPS='9000',
+                 Lidar_RPS='7',
+                 host='127.0.0.1',
+                 port=2000,
+                 delta_seconds=0.05,
+                 Verbose=False,
+                 Show=True,
+                 observation_format='grid',
+                 action_format='discrete',
+                 action_possibilities=1,
+                 discrete_actions=21,
+                 steer_cap=1,
+                 constant_throttle=0.5,
+                 turn_throttle_reduction=0,
+                 throttle_cap=1,
+                 speed_limit=45,
+                 reward_for_speed=0,
+                 reward_for_displacement=0.25,
+                 reward_for_destination=0.75,
+                 displacement_reset=200,
+                 Points_Per_Observation=0,
+                 min_speed=0,
+                 min_speed_punishment=0,
+                 exponentialize_reward=1,
+                 steps_b4_reset=10000,
+                 destination_bonus=True,
+                 turn_punishment=0
+                 ):
+
+        self.turn_punishment = turn_punishment
+        self.destination_bonus = destination_bonus
+        self.steps_b4_reset = steps_b4_reset
+        self.exponentialize_reward = exponentialize_reward
+        self.min_speed_punishment = min_speed_punishment
+        self.min_speed = min_speed
+        self.Points_Per_Observation = Points_Per_Observation
+        self.displacement_reset = displacement_reset
+        self.reward_for_destination = reward_for_destination
+        self.reward_for_displacement = reward_for_displacement
+        self.reward_for_speed = reward_for_speed
+        self.speed_limit = speed_limit
+        self.throttle_cap = throttle_cap
+        self.turn_throttle_reduction = turn_throttle_reduction
+        self.constant_throttle = constant_throttle
+        self.steer_cap = steer_cap
+        self.discrete_actions = discrete_actions
+        self.action_possibilities = action_possibilities
+        self.action_format = action_format
+        self.observation_format = observation_format
+        self.Show = Show
+        self.Verbose = Verbose
+        self.delta_seconds = delta_seconds
+        self.port = port
+        self.host = host
+        self.Lidar_RPS = Lidar_RPS
+        self.Lidar_PPS = Lidar_PPS
+        self.Lidar_Resolution = Lidar_Resolution
+        self.Lidar_Depth = Lidar_Depth
+        self.reward = 0
+        self.done = False
 
         super(MidEnv, self).__init__()
 
@@ -76,6 +123,7 @@ class MidEnv(BackEnv):
         try:
             self.world.tick()
         except RuntimeError:
+            # This doesn't work. No clue why not. Try purposely crashing the server...
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
             time.sleep(5)
@@ -99,7 +147,7 @@ class MidEnv(BackEnv):
         brake = 0
         reverse = False
 
-        #Action function
+        # Action function
         if self.action_format == 'discrete':
             steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor) * self.steer_cap
             if self.action_possibilities == 0:
@@ -135,31 +183,31 @@ class MidEnv(BackEnv):
 
             velocity = self.tesla.get_velocity()
             abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
-            velocity_reward = self.reward_distribution[0] * abs_velocity / self.speed_limit
+            velocity_reward = self.reward_for_speed * abs_velocity / self.speed_limit
             if abs_velocity > self.speed_limit:
-                velocity_reward = self.reward_distribution[0] - velocity_reward
+                velocity_reward = self.reward_for_speed - velocity_reward
 
             displacement = math.sqrt((self.tesla.get_location().x - self.init_location.x) ** 2 +
                                      (self.tesla.get_location().y - self.init_location.y) ** 2)
-            displacement_reward = self.reward_distribution[1] * displacement / self.displacement_reset
+            displacement_reward = self.reward_for_displacement * displacement / self.displacement_reset
 
             if displacement > self.displacement_reset:
                 self.init_location = self.tesla.get_location()
 
             target = math.sqrt((self.tesla.get_location().x - self.target_location.x) ** 2 +
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
-            target_reward = self.reward_distribution[2] * (1 - target / self.distance_to_target)
+            target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = velocity_reward + displacement_reward + target_reward
+            self.reward = ((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment)) ** self.exponentialize_reward
         else:
             abs_velocity = 0
             displacement = 0
             target = self.distance_to_target
 
         if abs_velocity < self.min_speed:
-            self.reward = self.min_speed_discount
+            self.reward = self.min_speed_punishment
 
-        if target < 0.5:
+        if target < 0.5 and self.destination_bonus:
             self.reward = 1
             self.done = True
 
@@ -167,7 +215,7 @@ class MidEnv(BackEnv):
             self.reward = -1
             self.done = True
 
-        if self.tesla.get_location().z < -20 or self.step_counter > 10000:
+        if self.tesla.get_location().z < -20 or self.step_counter > self.steps_b4_reset:
             self.done = True
 
         if self.Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
@@ -196,7 +244,7 @@ class MidEnv(BackEnv):
 
         self.lidar_index += length
 
-        if self.observation_format == 'grid' or self.observation_format == 'image' or self.View:
+        if self.observation_format == 'grid' or self.observation_format == 'image' or self.Show:
             x_points = (((self.Lidar_Field - 1) / 2) + np.around(x_raw * self.Lidar_Resolution)).astype(dtype=int)
             y_points = (((self.Lidar_Field - 1) / 2) - np.around(y_raw * self.Lidar_Resolution)).astype(dtype=int)
 
@@ -230,6 +278,3 @@ class MidEnv(BackEnv):
     def reset(self, **kwargs):
         super(MidEnv, self).reset()
         return self.observation, {}
-
-    def name(self):
-        return Path(__file__).stem
