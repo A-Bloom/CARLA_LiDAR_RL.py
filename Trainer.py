@@ -42,6 +42,7 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C']
 
     experiments = variableUnion(connection_vars, lidar_vars, reward_vars, action_vars, library=[])
 
+
     for run in range(experiment_runs):
         print(f"Beginning experiment run {run + 1} of {experiment_runs}")
         for algorithm in algorithms:
