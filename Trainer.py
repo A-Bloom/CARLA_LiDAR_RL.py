@@ -45,8 +45,7 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C']
             for experiment in experiments:
                 env = MidEnv(**experiment, **debugging_vars)
                 for algorithm_factor in algorithm_factors:
-                    print("here")
-                    model = globals()[algorithm](env, device, **algorithm_factor)
+                    model = globals()[algorithm](env=env, device=device, **algorithm_factor)
                     timestamp = datetime.now().strftime("_%m_%d_%H_%M")
                     tb_dir = f"{algorithm}_{timestamp}"
                     model_dir = f"{folder_name}/{algorithm}/{timestamp}"
