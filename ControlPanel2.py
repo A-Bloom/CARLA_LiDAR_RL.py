@@ -74,8 +74,8 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 2,  # Saves the policy every epoch.
-    'steps_per_epoch': 10,
+    'epochs': 10,  # Saves the policy every epoch.
+    'steps_per_epoch': 500,
 }
 
 # Reinforcement Learning Training Options. For more info see
@@ -97,7 +97,7 @@ algorithm_options = {
 
 # A2C specific options
 A2C_options = {
-    'n_steps': 5,
+    'n_steps': 1,
     'gae_lambda': 1.0,
     'ent_coef': 0.0,
     'vf_coef': 0.5,

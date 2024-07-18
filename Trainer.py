@@ -11,14 +11,19 @@ import os
 
 
 def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C'],
-          connection_vars=None, debugging_vars=None, lidar_vars=None, reward_vars=None, action_vars=None, algorithm_vars=None,
-          A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None, TD3_vars=None):
+          connection_vars=None, debugging_vars=None, lidar_vars=None, reward_vars=None, action_vars=None,
+          algorithm_vars=None, A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None, TD3_vars=None):
 
     timestamp = datetime.now()
     folder_name = ("Output/Experiment" + timestamp.strftime("_%m_%d_%H_%M"))
     log_dir = f"{folder_name}/TBLogs"
     os.makedirs(log_dir, exist_ok=True)
     print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
+
+    if debugging_vars['Verbose']:
+        verbose = 2
+    else:
+        verbose = 0
 
     device = "auto"
     if platform == "linux":
@@ -38,31 +43,44 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C']
     experiments = variableUnion(connection_vars, lidar_vars, reward_vars, action_vars, library=[])
 
     for run in range(experiment_runs):
-        print(f"Beginning run {run+1} of {experiment_runs}")
+        print(f"Beginning experiment run {run + 1} of {experiment_runs}")
         for algorithm in algorithms:
             print(f"Running algorithm {algorithm}")
-            algorithm_factors = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
+            algorithm_configurations = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
             for experiment in experiments:
-                env = MidEnv(**experiment, **debugging_vars)
-                for algorithm_factor in algorithm_factors:
-                    model = globals()[algorithm](env=env, device=device, **algorithm_factor)
-                    timestamp = datetime.now().strftime("_%m_%d_%H_%M")
-                    tb_dir = f"{algorithm}_{timestamp}"
-                    model_dir = f"{folder_name}/{algorithm}/{timestamp}"
-                    for epoch in range(epochs):
-                        print(f"Beginning epoch {epoch+1} of {epochs}")
-                        model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
-                        os.makedirs(model_dir, exist_ok=True)
-                        model.save(f"{model_dir}/{steps_per_epoch * epoch}")
-                        var_info = open(f"{model_dir}/var_info.json", 'w')
-                        json.dump([algorithm, experiment, algorithm_factor], var_info)
-                        var_info.close()
-                        archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}", 'a')
-                        archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
-                        archive.close()
-                        os.remove(f"{model_dir}/var_info.json")
-                    del model
-                env.close()
+                if checkpoint(algorithm, experiment):
+                    env = MidEnv(**experiment, **debugging_vars)
+                    for algorithm_configuration in algorithm_configurations:
+                        model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
+                                                     tensorboard_log=log_dir, verbose=verbose)
+                        timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
+                        tb_dir = f"{algorithm}_{timestamp}"
+                        model_dir = f"{folder_name}/{algorithm}/{timestamp}"
+                        for epoch in range(1, epochs + 1):
+                            print(f"Beginning epoch {epoch} of {epochs}")
+                            model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
+                            os.makedirs(model_dir, exist_ok=True)
+                            model.save(f"{model_dir}/{steps_per_epoch * epoch}")
+                            var_info = open(f"{model_dir}/var_info.json", 'w')
+                            json.dump([algorithm, experiment, algorithm_configuration], var_info)
+                            var_info.close()
+                            archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}", 'a')
+                            archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
+                            archive.close()
+                            #os.remove(f"{model_dir}/var_info.json")
+                        del model
+                    env.close()
+
+
+def checkpoint(algorithm, experiment):
+    cleared = True
+    discrete = ['A2C', 'DQN', 'PPO']
+    continuous = ['A2C', 'DDPG', 'PPO', 'SAC', 'TD3']
+    if ((experiment['action_format'] == 'discrete' and algorithm not in discrete) or
+            (experiment['action_format'] == 'continuous' and algorithm not in continuous) or
+            (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)):
+        cleared = False
+    return cleared
 
 
 def variableUnion(*args, library):
