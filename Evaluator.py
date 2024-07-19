@@ -1,18 +1,55 @@
-from stable_baselines3 import PPO
+from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
 from stable_baselines3.common.evaluation import evaluate_policy
-from Envs.Env3 import CarEnv
+import zipfile
+import json
+import sys
+import os
+from pathlib import Path
+from Env import Env
 
-env = CarEnv()
+path = r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\LIDAR_1\Output\Experiment_07_19_09_09\A2C\07_19_09_09_41\500.zip"
+debugging_options = {'Show': True, 'Verbose': False}
 
-path = "Output/Models/Trainer/Env3_07_01_12_02"
 
-model = PPO.load(path, env)
+def evaluate(path_to_zip, debugging_vars):
+    archive = zipfile.ZipFile(path_to_zip, 'r')
+    var_info = archive.open('var_info.json')
+    algorithm, experiment, algorithm_configuration = json.load(var_info)
+    env = Env(**experiment, **debugging_vars)
+    model = globals()[algorithm].load(path_to_zip, env)
+    print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
+    print(evaluate_policy(model, env, 10))
+    env.close()
 
-# check_env(env)
 
-print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
+if len(sys.argv) == 1:
+    try:
+        print(f"Evaluating {path}")
+        evaluate(path, debugging_options)
+    except:
+        print(f"{path} could not be evaluated. Unknown Error.")
+else:
+    for arg in sys.argv[1:]:
+        location = Path(arg)
+        if location.is_file():
+            if arg.endswith('.zip'):
+                try:
+                    print(f"Evaluating {arg}")
+                    evaluate(arg, debugging_options)
+                except:
+                    print(f"{arg} could not be evaluated. Unknown Error.")
+            else:
+                print(f"{arg} is not a zip file.")
+        elif location.is_dir:
+            files = os.listdir(arg)
+            for file in files:
+                if file.endswith('.zip'):
+                    try:
+                        print(f"Evaluating {arg}")
+                        evaluate(arg, debugging_options)
+                    except:
+                        print(f"{arg} could not be evaluated. Unknown Error.")
+        else:
+            print(f"{arg} does not exist.")
 
-print(evaluate_policy(model, env, 10))
-
-env.close()

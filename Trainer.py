@@ -3,7 +3,7 @@ from stable_baselines3.common import utils
 from datetime import datetime
 from sys import platform
 from subprocess import Popen
-from MidEnv import MidEnv
+from Env import Env
 import zipfile
 import json
 import copy
@@ -50,26 +50,26 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C']
             algorithm_configurations = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
             for experiment in experiments:
                 if checkpoint(algorithm, experiment):
-                    env = MidEnv(**experiment, **debugging_vars)
+                    env = Env(**experiment, **debugging_vars)
                     for algorithm_configuration in algorithm_configurations:
                         model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
                                                      tensorboard_log=log_dir, verbose=verbose)
                         timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
                         tb_dir = f"{algorithm}_{timestamp}"
                         model_dir = f"{folder_name}/{algorithm}/{timestamp}"
+                        os.makedirs(model_dir, exist_ok=True)
+                        var_info = open(f"{model_dir}/var_info.json", 'w')
+                        json.dump([algorithm, experiment, algorithm_configuration], var_info)
+                        var_info.close()
                         for epoch in range(1, epochs + 1):
                             print(f"Beginning epoch {epoch} of {epochs}")
                             model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
-                            os.makedirs(model_dir, exist_ok=True)
                             model.save(f"{model_dir}/{steps_per_epoch * epoch}")
-                            var_info = open(f"{model_dir}/var_info.json", 'w')
-                            json.dump([algorithm, experiment, algorithm_configuration], var_info)
-                            var_info.close()
-                            archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}", 'a')
+                            archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
                             archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
                             archive.close()
-                            #os.remove(f"{model_dir}/var_info.json")
                         del model
+                        os.remove(f"{model_dir}/var_info.json")
                     env.close()
 
 

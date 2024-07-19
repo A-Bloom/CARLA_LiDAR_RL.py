@@ -13,10 +13,10 @@ reward = 0
 done = False
 
 
-class MidEnv(BackEnv):
+class Env(BackEnv):
 
     def __init__(self,
-                 Lidar_Depth='128',
+                 Lidar_Depth='30',
                  Lidar_Resolution=4,
                  Lidar_PPS='9000',
                  Lidar_RPS='7',
@@ -36,11 +36,11 @@ class MidEnv(BackEnv):
                  speed_limit=45,
                  reward_for_speed=0,
                  reward_for_displacement=0.25,
-                 reward_for_destination=0.75,
+                 reward_for_destination=0.5,
                  displacement_reset=200,
                  Points_Per_Observation=0,
-                 min_speed=0,
-                 min_speed_punishment=0,
+                 min_speed=1,
+                 min_speed_punishment=-0.1,
                  exponentialize_reward=1,
                  steps_b4_reset=10000,
                  destination_bonus=True,
@@ -79,7 +79,7 @@ class MidEnv(BackEnv):
         self.reward = 0
         self.done = False
 
-        super(MidEnv, self).__init__()
+        super(Env, self).__init__()
 
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
@@ -140,7 +140,7 @@ class MidEnv(BackEnv):
                 self.world.tick()
             except RuntimeError:
                 print("Failed to Reconnect to Server, Shutting Down.")
-                super(MidEnv, self).close()
+                super(Env, self).close()
 
         self.done = False
         self.step_counter += 1
@@ -276,5 +276,5 @@ class MidEnv(BackEnv):
             self.lidar_index = 0
 
     def reset(self, **kwargs):
-        super(MidEnv, self).reset()
+        super(Env, self).reset()
         return self.observation, {}

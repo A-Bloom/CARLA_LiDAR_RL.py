@@ -61,7 +61,7 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': 'discrete',  # 'discrete' or 'continuous'
+    'action_format': ['discrete'],  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
     'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
@@ -74,30 +74,30 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 10,  # Saves the policy every epoch.
-    'steps_per_epoch': 1000,
+    'epochs': 2,  # Saves the policy every epoch.
+    'steps_per_epoch': 500,
 }
 
 # Reinforcement Learning Training Options. For more info see
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C', 'PPO'],  # This will test every other possibility with A2C and PPO
+algorithms = ['A2C']  # This will test every other possibility with A2C and PPO
 
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
+    'learning_rate': [0.01, 0.1],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': np.linspace(0.97, 0.99, 3).tolist(),
+    'gamma': 0.99,
     # Comment out for default values.
     #'seed': None
 }
 
 # A2C specific options
 A2C_options = {
-    'n_steps': 5,
+    'n_steps': 1,
     'gae_lambda': 1.0,
     'ent_coef': 0.0,
     'vf_coef': 0.5,
@@ -199,7 +199,7 @@ TD3_options = {
     'target_noise_clip': 0.5
 }
 
-Trainer.train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-              SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
-              debugging_vars=debugging_options,lidar_vars=lidar_options, reward_vars=reward_options,
-              algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+Trainer.train(connection_vars=connection_options, debugging_vars=debugging_options, lidar_vars=lidar_options,
+              reward_vars=reward_options, action_vars=action_options, algorithm_vars=algorithm_options, **run_options,
+              algorithms=algorithms, A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options,
+              PPO_vars=PPO_options, SAC_vars=SAC_options, TD3_vars=TD3_options)

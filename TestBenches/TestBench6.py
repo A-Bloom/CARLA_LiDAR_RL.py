@@ -1,7 +1,16 @@
-import numpy as np
+from pathlib import Path
+import sys
+import __main__
 
-a = locals()['np'].linspace(0.97, 0.99, 3)
+the_path = r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\LIDAR_1\Output\Experiment_07_19_09_09\A2C\07_19_09_09_41"
 
-print(a)
+print(the_path)
 
-print(a.tolist())
+file = Path(the_path)
+
+print(file.exists())
+print(file.is_file())
+print(file.is_dir())
+
+for arg in sys.argv[1:]:
+    print(arg)
