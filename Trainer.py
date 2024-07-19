@@ -10,12 +10,12 @@ import copy
 import os
 
 
-def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, algorithms=['A2C'],
+def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Output", algorithms=['A2C'],
           connection_vars=None, debugging_vars=None, lidar_vars=None, reward_vars=None, action_vars=None,
           algorithm_vars=None, A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None, TD3_vars=None):
 
     timestamp = datetime.now()
-    folder_name = ("Output/Experiment" + timestamp.strftime("_%m_%d_%H_%M"))
+    folder_name = (output_folder + "/Experiment" + timestamp.strftime("_%m_%d_%H_%M"))
     log_dir = f"{folder_name}/TBLogs"
     os.makedirs(log_dir, exist_ok=True)
     print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
