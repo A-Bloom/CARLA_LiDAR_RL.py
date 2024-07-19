@@ -1,3 +1,6 @@
+# This TestBench is a simplified version of how create_lidar_plane() takes a variable number of points coming in from
+# the listener and adds them to the incoming LiDAR observation.
+
 import numpy as np
 
 A = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])

@@ -1,3 +1,5 @@
+# This TestBench is a simplified example of how the variableUnion function works.
+
 import copy
 
 a_stuff = {'a': 1, 'b': 'two', 'c': 3}
@@ -36,7 +38,5 @@ def variableUnion(*args, library=[]):
 
 
 mid_stuff = variableUnion(b_stuff, d_stuff)
-
 final_stuff = variableUnion(c_stuff, library=mid_stuff)
-
 print(final_stuff)

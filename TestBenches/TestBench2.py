@@ -1,5 +1,7 @@
+# This TestBench is a simplified version of how create_lidar_plane() takes an array of points and
+# turns it into a point grid or image.
+
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
 
 size = 9
@@ -9,13 +11,10 @@ y = np.array([-4, -3, -2, -2, -1, 0, 1, 2, 2, 3, 3, 3, 2, 2, 2, 2, 2, 1, 0, -1, 
 
 a = np.zeros((size, size))
 
-
-
 x = (((size-1)/2)+x).astype(dtype=int)
 y = (((size-1)/2)-y).astype(dtype=int)
 
 a[y, x] = 1
-
 
 print(a)
 

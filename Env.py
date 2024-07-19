@@ -83,10 +83,14 @@ class Env(BackEnv):
 
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
+
         if self.Points_Per_Observation == 0:
+            # This is the number of points I assume should be in one LiDAR revolution and is defaulted to.
+            # TODO: From observation this seems to be inaccurate and a better value is 250. Figure out why.
+            #  Uncomment the cv.imwrite() near the end of step() to get images of individual observations.
             self.Points_Per_Observation = round(int(self.Lidar_PPS) / int(self.Lidar_RPS))
 
-        # Observation setup
+        # Observation setup, see DefaultControlPanel for details.
         if self.observation_format == 'points':
             self.observation = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(self.Points_Per_Observation, 2),
@@ -104,7 +108,7 @@ class Env(BackEnv):
             warnings.warn("Invalid observation format! Exiting...")
             exit(-1)
 
-        # Action setup
+        # Action setup, see DefaultControlPanel for details.
         if self.action_format == 'discrete':
             self.action_space = spaces.MultiDiscrete([self.discrete_actions, self.discrete_actions, 3])
         elif self.action_format == 'continuous':
@@ -114,6 +118,7 @@ class Env(BackEnv):
             warnings.warn("Invalid action format! Exiting...")
             exit(-1)
 
+        # Needed to make the lowest discrete action -1 and the highest 1.
         self.discrete_augmentor = round((self.discrete_actions - 1) / 2)
 
         print("Initializing MidEnv")
@@ -121,18 +126,18 @@ class Env(BackEnv):
     def step(self, action):
 
         try:
+            # The client is in control, so you need to tick the server.
             self.world.tick()
         except RuntimeError:
-            # This doesn't work. No clue why not. Try purposely crashing the server...
+            # TODO: Trying to reboot doesn't work. No clue why not. Try purposely crashing the server...
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
             time.sleep(5)
             if sys.platform == 'win32':
-                subprocess.Popen("CarlaPath.bat")
-            else:
-                subprocess.call(['sh', './CarlaPath.sh'])
+                subprocess.Popen("CarlaPath.bat")  # Edit this file to reflect your system specs
+            else:  # linux or mac
+                subprocess.call(['sh', './CarlaPath.sh'])  # Or edit this file to reflect your system specs
             time.sleep(20)
-            print("Slept")
             self.__init__()
             print("Reboot Successful!")
 
@@ -147,7 +152,7 @@ class Env(BackEnv):
         brake = 0
         reverse = False
 
-        # Action function
+        # Action function, see DefaultControlPanel for details on action_format and action_possibilities.
         if self.action_format == 'discrete':
             steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor) * self.steer_cap
             if self.action_possibilities == 0:
@@ -178,7 +183,7 @@ class Env(BackEnv):
 
         self.tesla.apply_control(carla.VehicleControl(throttle=throttle, steer=steer, brake=brake, reverse=reverse))
 
-        # Reward function
+        # Reward function, as of right now it only gets rewarded for going straight
         if not reverse:
 
             velocity = self.tesla.get_velocity()
@@ -191,22 +196,28 @@ class Env(BackEnv):
                                      (self.tesla.get_location().y - self.init_location.y) ** 2)
             displacement_reward = self.reward_for_displacement * displacement / self.displacement_reset
 
+            # Resets the displacement so that the agent has an impetus to keep moving.
             if displacement > self.displacement_reset:
                 self.init_location = self.tesla.get_location()
 
+            # Reward for getting closer to a destination.
             target = math.sqrt((self.tesla.get_location().x - self.target_location.x) ** 2 +
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
             target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = ((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment)) ** self.exponentialize_reward
+            self.reward = (((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment))
+                           ** self.exponentialize_reward)
         else:
-            abs_velocity = 0
+            abs_velocity = self.min_speed
             displacement = 0
             target = self.distance_to_target
 
+        # If it is going too slow it gets penalized.
+        # You might want to consider self.reward -= self.min_speed_punishment as well.
         if abs_velocity < self.min_speed:
             self.reward = self.min_speed_punishment
 
+        # As long as it is relatively close to the destination its doing fine.
         if target < 0.5 and self.destination_bonus:
             self.reward = 1
             self.done = True
@@ -215,6 +226,7 @@ class Env(BackEnv):
             self.reward = -1
             self.done = True
 
+        # Sometimes the agent will randomly fall out of the planet. No kidding.
         if self.tesla.get_location().z < -20 or self.step_counter > self.steps_b4_reset:
             self.done = True
 
@@ -229,6 +241,8 @@ class Env(BackEnv):
 
         if self.Show:
             cv.imshow('Top View', self.camera_data)
+            # OpenCV takes 3 channel BGR data, so I needed to stack two blank arrays on top of the
+            # single channel lidar_data array *255 for color.
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
             cv.waitKey(1)
 
@@ -238,6 +252,9 @@ class Env(BackEnv):
 
         raw = np.copy(np.frombuffer(points.raw_data, dtype=np.dtype('f4')))
 
+        # Takes the x and y points from the raw data.
+        # TODO: I know this works from observation but logic tells me that the 1 is in the wrong place.
+        #  See TestBench2 for a simplified version of this.
         x_raw = raw[1::4]
         y_raw = raw[::4]
         length = len(x_raw)

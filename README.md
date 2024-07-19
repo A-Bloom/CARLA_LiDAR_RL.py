@@ -1,20 +1,15 @@
-## Using RL and 2D LiDAR observations to control a car and avoid obstacles in CARLA.
+## Using reinforcement learning and 2D LiDAR observations to control a car and avoid obstacles in CARLA.
 
-The BackEnv contains top level functions that all the other environments need to function.<br>
-All the other environments inherit the BackEnv function and add specific Action Spaces, Observation Spaces, and Reward Functions
+The purpose of this repository is to allow you to train an RL agent using stable-baselines3 algorithms to control a car 
+and avoid obstacles using only 2D LiDAR observations in the CARLA simulator.
 
-This table lists the various features of each environment:
-<br> All Environments give -1 reward for crashing.
+The environment is made up of 2 pieces which are only divided for readability:\
+BackEnv.py inherits the base gymnasium environment and contains all the pieces for setting up the Carla environment. 
+It also includes the functions for resetting and closing the environment. 
+Unless you want to change which car and world you are using or what sensors are on the car this shouldn't need to be 
+touched.\
+Env.py inherits BackEnv.py and contains all the logic pertaining to: 1.Creating the observation in create_lidar_plane()
+2.Calculating the action based on the agent's response in step() 3. Calculating the reward based on the agents state, 
+also in step().
 
-| Environment | Action Space                                                                                        | Observation Space                                                    | Reward Function                                                                         |
-|-------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| Env1        | 21 discrete throttle actions from 1 reverse to 1 forward<br> 21 discrete steer actions from -1 to 1 | Blank grid with ones signifying obstacles<br> Precision of 1/4 meter | Rewards for going faster up to 50 m/s with a discount for turning<br> Max reward of 0.5 |
-| Env2        | 21 discrete steer actions from -1 to 1                                                              | Blank grid with ones signifying obstacles<br> Precision of 1/4 meter | Reward for Speed, Speed is decreased proportionally to steer                            |
-| Env3        |                                                                                                     |                                                                      |                                                                                         |
-| Env4        |                                                                                                     |                                                                      |                                                                                         |
-| Env5        |                                                                                                     |                                                                      |                                                                                         |
-| Env6        |                                                                                                     |                                                                      |                                                                                         |
-| Env7        |                                                                                                     |                                                                      |                                                                                         |
-| Env8        |                                                                                                     |                                                                      |                                                                                         |
-
-The SuperTrainer is used to test multiple environments with multiple hyperparameters and then graph them against performance.
+Trainer.py 

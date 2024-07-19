@@ -74,6 +74,8 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
 
 
 def checkpoint(algorithm, experiment):
+    # Makes sure that the experiment makes sense or will run without errors.
+    # If you find another nonsensical combination just stick it in.
     cleared = True
     discrete = ['A2C', 'DQN', 'PPO']
     continuous = ['A2C', 'DDPG', 'PPO', 'SAC', 'TD3']
@@ -85,6 +87,9 @@ def checkpoint(algorithm, experiment):
 
 
 def variableUnion(*args, library):
+    # This function takes all the possibilities in args and makes a library of all the possible combinations of
+    # experiments. If you already have a library and want to add to it specify a library. Otherwise, specify library=[]
+    # Don't ask me how it works. I wrote it, but I wouldn't be able to explain it. See TestBench4 to play with it.
     interim = []
 
     for variable in args:
