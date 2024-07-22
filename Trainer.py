@@ -1,3 +1,5 @@
+# TODO: Add callbacks to save the best runs and automatically delete earlier failed runs
+#  to save memory and help with finding meaningful runs.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
 from datetime import datetime
@@ -29,42 +31,51 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
     if platform == "linux":
         os.popen(f"python -m tensorboard.main --logdir={log_dir}")
         print(f"Opening TensorBoard at {log_dir}")
-        device = "cuda:1"
+        device = "cuda:1"  # !!Make sure to change this per your device's configuration!!
     elif platform == "win32":
         Popen(f"py -m tensorboard.main --logdir={log_dir}", creationflags=0x00000008)
         print(f"Opening TensorBoard at {log_dir}")
 
+    # Saves all the experiment info to a file.
     experiment_info = open(f"{folder_name}/experiment_info.json", 'w')
     json.dump([experiment_runs, epochs, steps_per_epoch, algorithms,
                connection_vars, debugging_vars, lidar_vars, reward_vars, action_vars, algorithm_vars,
                A2C_vars, DDPG_vars, DQN_vars, PPO_vars, SAC_vars, TD3_vars], experiment_info)
     experiment_info.close()
 
+    # Gets all possible experiments.
     experiments = variableUnion(connection_vars, lidar_vars, reward_vars, action_vars, library=[])
-
 
     for run in range(experiment_runs):
         print(f"Beginning experiment run {run + 1} of {experiment_runs}")
         for algorithm in algorithms:
             print(f"Running algorithm {algorithm}")
+            # Gets all possible algorithm configurations
             algorithm_configurations = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
             for experiment in experiments:
+                # Makes sure the experiment makes sense.
                 if checkpoint(algorithm, experiment):
+                    # Creates Environment.
                     env = Env(**experiment, **debugging_vars)
                     for algorithm_configuration in algorithm_configurations:
+                        # Finds the algorithm from a string and creates a model.
                         model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
                                                      tensorboard_log=log_dir, verbose=verbose)
                         timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
                         tb_dir = f"{algorithm}_{timestamp}"
                         model_dir = f"{folder_name}/{algorithm}/{timestamp}"
                         os.makedirs(model_dir, exist_ok=True)
+                        # Creates a file to log the parameters for this specific experiment.
                         var_info = open(f"{model_dir}/var_info.json", 'w')
                         json.dump([algorithm, experiment, algorithm_configuration], var_info)
                         var_info.close()
                         for epoch in range(1, epochs + 1):
                             print(f"Beginning epoch {epoch} of {epochs}")
+                            # Trains the model.
                             model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
+                            # Saves the model at each epoch.
                             model.save(f"{model_dir}/{steps_per_epoch * epoch}")
+                            # Puts the parameter log file in each .zip folder.
                             archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
                             archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
                             archive.close()

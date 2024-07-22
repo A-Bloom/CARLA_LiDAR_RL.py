@@ -10,46 +10,48 @@ from Env import Env
 
 path = r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\LIDAR_1\Output\Experiment_07_19_09_09\A2C\07_19_09_09_41\500.zip"
 debugging_options = {'Show': True, 'Verbose': False}
+episodes_to_evaluate = 10
 
 
-def evaluate(path_to_zip, debugging_vars):
+def evaluate(path_to_zip, debugging_vars, n_eval_episodes):
     archive = zipfile.ZipFile(path_to_zip, 'r')
     var_info = archive.open('var_info.json')
     algorithm, experiment, algorithm_configuration = json.load(var_info)
     env = Env(**experiment, **debugging_vars)
     model = globals()[algorithm].load(path_to_zip, env)
     print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
-    print(evaluate_policy(model, env, 10))
+    print(evaluate_policy(model, env, n_eval_episodes=n_eval_episodes))
     env.close()
 
 
 if len(sys.argv) == 1:
     try:
         print(f"Evaluating {path}")
-        evaluate(path, debugging_options)
+        evaluate(path, debugging_options, episodes_to_evaluate)
     except:
         print(f"{path} could not be evaluated. Unknown Error.")
 else:
     for arg in sys.argv[1:]:
         location = Path(arg)
-        if location.is_file():
-            if arg.endswith('.zip'):
-                try:
+        if location.exists():
+            if location.is_file():
+                if arg.endswith('.zip'):
+                    #try:
                     print(f"Evaluating {arg}")
-                    evaluate(arg, debugging_options)
-                except:
-                    print(f"{arg} could not be evaluated. Unknown Error.")
-            else:
-                print(f"{arg} is not a zip file.")
-        elif location.is_dir:
-            files = os.listdir(arg)
-            for file in files:
-                if file.endswith('.zip'):
-                    try:
-                        print(f"Evaluating {arg}")
-                        evaluate(arg, debugging_options)
-                    except:
-                        print(f"{arg} could not be evaluated. Unknown Error.")
+                    evaluate(arg, debugging_options, episodes_to_evaluate)
+                    #except:
+                        #print(f"{arg} could not be evaluated. Unknown Error.")
+                else:
+                    print(f"{arg} is not a zip file.")
+            elif location.is_dir:
+                files = os.listdir(arg)
+                for file in files:
+                    if file.endswith('.zip'):
+                        try:
+                            print(f"Evaluating {arg}")
+                            evaluate(arg, debugging_options, episodes_to_evaluate)
+                        except:
+                            print(f"{arg} could not be evaluated. Unknown Error.")
         else:
             print(f"{arg} does not exist.")
 

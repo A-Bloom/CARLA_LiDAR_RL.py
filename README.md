@@ -1,7 +1,12 @@
 ## Using reinforcement learning and 2D LiDAR observations to control a car and avoid obstacles in CARLA.
 
 The purpose of this repository is to allow you to train an RL agent using stable-baselines3 algorithms to control a car 
-and avoid obstacles using only 2D LiDAR observations in the CARLA simulator.
+and avoid obstacles using only 2D LiDAR observations in the CARLA simulator. 
+It is built in a way to let you design complex experiments and have the code run all of them in sequence 
+and log everything for you.
+
+Everything was built using Carla 0.9.15 and Python 3.10. Other dependencies are listed in requirements.txt and can be 
+installed with "pip install -r requirements.txt".
 
 The environment is made up of 2 pieces which are only divided for readability:\
 BackEnv.py inherits the base gymnasium environment and contains all the pieces for setting up the Carla environment. 
@@ -12,4 +17,25 @@ Env.py inherits BackEnv.py and contains all the logic pertaining to: 1.Creating 
 2.Calculating the action based on the agent's response in step() 3. Calculating the reward based on the agents state, 
 also in step().
 
-Trainer.py 
+Trainer.py calculates, runs and logs all the experiments.
+
+ControlPanel.py is where you set up your experiment. If you only have a single possibility you want to test,
+leave the value as a single value. If you want to test multiple possibilities, put two values in an array,
+and it will test them both in sequence. You can array any number of parameters, and it will test all the combinations.
+
+DefaultControlPanel.py is just a reference for all the default values.
+
+Evaluator.py allows you to visualize policies. You can evaluate any number of policies in sequence.
+Either edit the default file path or run Evaluator.py in command line and add paths to any number of files and folders
+you want to evaluate.
+
+CleanUp.py just clears all the actors from the world and unlocks the world from synchronous mode.
+Very useful if you have a couple of failed runs and there are dead cars scattered all over the place.
+
+The CarlaPath files are files to allow Carla to be re-launched by the client if it crashes. 
+It should be modified per your system. It currently doesn't work properly. Try crashing the server on purpose...
+
+ManualControl.py does exactly what it sounds like it should do.
+
+The TestBenches are simplified versions of some of the more complex pieces of code. 
+They are referenced throughout the comments.

@@ -262,11 +262,15 @@ class Env(BackEnv):
         self.lidar_index += length
 
         if self.observation_format == 'grid' or self.observation_format == 'image' or self.Show:
+            # To put the observation in a grid pattern the x,y points are formatted as integers in a 2D array.
+            # See TestBench2 for a simplified version of this.
             x_points = (((self.Lidar_Field - 1) / 2) + np.around(x_raw * self.Lidar_Resolution)).astype(dtype=int)
             y_points = (((self.Lidar_Field - 1) / 2) - np.around(y_raw * self.Lidar_Resolution)).astype(dtype=int)
 
+            # All of those indices are assigned 1
             self.lidar_data[0, y_points, x_points] = 1
 
+            # If the observation buffer, lidar_data[0], fills, it gets replaced by lidar_data[1] and begins refilling.
             if self.lidar_index > self.Points_Per_Observation:
                 self.lidar_data[1] = self.lidar_data[0]
                 self.lidar_data[0] = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.dtype('f4'))
@@ -276,11 +280,15 @@ class Env(BackEnv):
             elif self.observation_format == 'image':
                 self.observation = np.dstack((self.blanks, self.blanks, self.lidar_data[1]))
 
+        # points[0] acts as a buffer until enough data points come from the LiDAR listener for a complete observation.
+        # Then when self.lidar_index > self.Points_Per_Observation only enough points to fit enter the buffer
+        # and points[1] gets swapped with points[0].
+        # See TestBench3 for a simplified version of this.
         if self.observation_format == 'points':
             if self.lidar_index > self.Points_Per_Observation:
-                self.points[0][self.lidar_index - length:] = ((np.dstack((x_raw, y_raw)).squeeze())[
-                                                              :(self.Points_Per_Observation - self.lidar_index)]) / int(
-                    self.Lidar_Depth)
+                self.points[0][self.lidar_index - length:] = (
+                        ((np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation - self.lidar_index)]) /
+                        int(self.Lidar_Depth))
                 self.points[1] = self.points[0]
                 self.points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             else:
