@@ -89,8 +89,8 @@ class BackEnv(gym.Env):
         self.lidar_bp.set_attribute('points_per_second', self.Lidar_PPS)
         self.lidar = self.world.spawn_actor(self.lidar_bp, self.lidar_init_transform, attach_to=self.tesla)
         # These are for LiDAR observations and visuals.
-        self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
-        self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field))
+        self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
+        self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
         self.blanks[round(self.Lidar_Field/2-0.5)][round(self.Lidar_Field/2-0.5)] = 1
         self.lidar_index = 0
         # LiDAR listener is in Env.py

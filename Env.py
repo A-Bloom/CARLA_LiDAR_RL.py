@@ -101,9 +101,9 @@ class Env(BackEnv):
             self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
                                                 dtype=np.float32)
         elif self.observation_format == 'image':
-            self.observation = np.zeros((self.Lidar_Field, self.Lidar_Field, 3), dtype=np.float32)
-            self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field, 3),
-                                                dtype=np.float32)
+            self.observation = np.zeros((3, self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
+            self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(3, self.Lidar_Field, self.Lidar_Field),
+                                                dtype=np.uint8)
         else:
             warnings.warn("Invalid observation format! Exiting...")
             exit(-1)
@@ -218,8 +218,8 @@ class Env(BackEnv):
             self.reward = self.min_speed_punishment
 
         # As long as it is relatively close to the destination its doing fine.
-        if target < 0.5 and self.destination_bonus:
-            self.reward = 1
+        if target < 0.5:
+            self.reward = self.destination_bonus
             self.done = True
 
         if self.collision_sensed:
@@ -273,12 +273,12 @@ class Env(BackEnv):
             # If the observation buffer, lidar_data[0], fills, it gets replaced by lidar_data[1] and begins refilling.
             if self.lidar_index > self.Points_Per_Observation:
                 self.lidar_data[1] = self.lidar_data[0]
-                self.lidar_data[0] = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.dtype('f4'))
+                self.lidar_data[0] = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
 
             if self.observation_format == 'grid':
                 self.observation = self.lidar_data[1]
             elif self.observation_format == 'image':
-                self.observation = np.dstack((self.blanks, self.blanks, self.lidar_data[1]))
+                self.observation = np.stack((self.blanks, self.blanks, self.lidar_data[1]))
 
         # points[0] acts as a buffer until enough data points come from the LiDAR listener for a complete observation.
         # Then when self.lidar_index > self.Points_Per_Observation only enough points to fit enter the buffer

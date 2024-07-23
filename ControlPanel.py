@@ -28,7 +28,7 @@ lidar_options = {
     'Lidar_Resolution': 1,  # Points generated per meter.
     'Lidar_PPS': '9000',  # Points/Second. Must be string.
     'Lidar_RPS': '7,',  # Rotations/Second. Must be string.
-    'observation_format': 'grid',  # 'points' or 'grid' or 'image'.
+    'observation_format': 'image',  # 'points' or 'grid' or 'image'.
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
     # image is grid with 2 more layers "np.dstack"ed on top to create an image
@@ -48,7 +48,7 @@ reward_options = {
 
     'reward_for_destination': 0.5,
     # For being closer to the destination. Normalized by initial distance from destination.
-    'destination_bonus': True,  # Boosts the reward to 1 on arrival within 1 meter.
+    'destination_bonus': 1,  # Boosts the reward to 1 on arrival within 1 meter.
 
     'exponentialize_reward': 2,  # Will use this number as an exponent on the reward
     # to make it exponentially larger closer to the goal.
@@ -61,7 +61,7 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': ['discrete'],  # 'discrete' or 'continuous'
+    'action_format': 'continuous',  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
     'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
@@ -74,23 +74,23 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 2,  # Saves the policy every epoch.
-    'steps_per_epoch': 500,
+    'epochs': 4,  # Saves the policy every epoch.
+    'steps_per_epoch': 200,
 }
 
 # Reinforcement Learning Training Options. For more info see
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C']  # This will test every other possibility with A2C and PPO
+algorithms = ['SAC']  # This will test every other possibility with A2C and PPO
 
 algorithm_options = {
-    'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
+    'policy': 'CnnPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
     'learning_rate': [0.01, 0.1],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': 0.99,
+    'gamma': 0.99
     # Comment out for default values.
     #'seed': None
 }
