@@ -209,8 +209,13 @@ class Env(BackEnv):
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
             target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = (((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment))
-                           ** self.exponentialize_reward)
+            self.reward = ((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment))
+
+            if self.reward < 0:
+                self.reward = -(self.reward ** self.exponentialize_reward)
+            else:
+                self.reward = self.reward ** self.exponentialize_reward
+
         else:
             abs_velocity = self.min_speed
             displacement = 0
