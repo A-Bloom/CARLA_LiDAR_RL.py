@@ -1,6 +1,8 @@
 # TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
+# TODO: Fix the restart feature so that it places continued policies in the correct folder.
+# TODO: Add support for algorithms in stable baselines3 contrib and SBX.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
 from datetime import datetime
@@ -164,6 +166,8 @@ def variableUnion(*args, library):
 
 # All of this is for calling the Trainer itself from commandline with the path to an existing experiment to restart it.
 if __name__ == "__main__":
+    # TODO: set this up with argparse with flags to change options like View and to allow the user to upgrade a
+    #  single zip file with flags like steps and epochs.
     if len(sys.argv) == 2:
         if Path(sys.argv[1]).exists() and Path(f"{sys.argv[1]}/experiment_info.json").exists() and Path(
                 f"{sys.argv[1]}/run_info.json").exists():

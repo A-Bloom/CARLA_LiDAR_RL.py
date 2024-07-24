@@ -47,37 +47,38 @@ class Env(BackEnv):
                  turn_punishment=0
                  ):
 
-        self.turn_punishment = turn_punishment
-        self.destination_bonus = destination_bonus
-        self.steps_b4_reset = steps_b4_reset
-        self.exponentialize_reward = exponentialize_reward
-        self.min_speed_punishment = min_speed_punishment
-        self.min_speed = min_speed
-        self.Points_Per_Observation = Points_Per_Observation
-        self.displacement_reset = displacement_reset
-        self.reward_for_destination = reward_for_destination
-        self.reward_for_displacement = reward_for_displacement
-        self.reward_for_speed = reward_for_speed
-        self.speed_limit = speed_limit
-        self.throttle_cap = throttle_cap
-        self.turn_throttle_reduction = turn_throttle_reduction
-        self.constant_throttle = constant_throttle
-        self.steer_cap = steer_cap
-        self.discrete_actions = discrete_actions
-        self.action_possibilities = action_possibilities
-        self.action_format = action_format
-        self.observation_format = observation_format
-        self.Show = Show
-        self.Verbose = Verbose
-        self.delta_seconds = delta_seconds
-        self.port = port
-        self.host = host
-        self.Lidar_RPS = Lidar_RPS
-        self.Lidar_PPS = Lidar_PPS
-        self.Lidar_Resolution = Lidar_Resolution
-        self.Lidar_Depth = Lidar_Depth
-        self.reward = 0
-        self.done = False
+        if 'done' not in self.__dict__:
+            self.turn_punishment = turn_punishment
+            self.destination_bonus = destination_bonus
+            self.steps_b4_reset = steps_b4_reset
+            self.exponentialize_reward = exponentialize_reward
+            self.min_speed_punishment = min_speed_punishment
+            self.min_speed = min_speed
+            self.Points_Per_Observation = Points_Per_Observation
+            self.displacement_reset = displacement_reset
+            self.reward_for_destination = reward_for_destination
+            self.reward_for_displacement = reward_for_displacement
+            self.reward_for_speed = reward_for_speed
+            self.speed_limit = speed_limit
+            self.throttle_cap = throttle_cap
+            self.turn_throttle_reduction = turn_throttle_reduction
+            self.constant_throttle = constant_throttle
+            self.steer_cap = steer_cap
+            self.discrete_actions = discrete_actions
+            self.action_possibilities = action_possibilities
+            self.action_format = action_format
+            self.observation_format = observation_format
+            self.Show = Show
+            self.Verbose = Verbose
+            self.delta_seconds = delta_seconds
+            self.port = port
+            self.host = host
+            self.Lidar_RPS = Lidar_RPS
+            self.Lidar_PPS = Lidar_PPS
+            self.Lidar_Resolution = Lidar_Resolution
+            self.Lidar_Depth = Lidar_Depth
+            self.reward = 0
+            self.done = False
 
         super(Env, self).__init__()
 
@@ -133,6 +134,9 @@ class Env(BackEnv):
             print("Connection to Server Lost Attempting Reboot...")
             cv.destroyAllWindows()
             time.sleep(5)
+            self.lidar.stop()
+            self.camera.stop()
+            self.collision.stop()
             if sys.platform == 'win32':
                 subprocess.Popen("CarlaPath.bat")  # Edit this file to reflect your system specs
             else:  # linux or mac

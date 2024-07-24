@@ -146,21 +146,19 @@ class BackEnv(gym.Env):
     def close(self):
         cv.destroyAllWindows()
 
-        # Destroys vehicles.
-        vehicles = self.world.get_actors().filter("*vehicle*")
-        vehicles_len = len(vehicles)
-        for i in range(vehicles_len):
-            vehicles[i].destroy()
         # Destroys sensors.
         sensors = self.world.get_actors().filter("*sensor*")
-        sensors_len = len(sensors)
-        for i in range(sensors_len):
-            sensors[i].destroy()
+        for sensor in sensors:
+            sensor.stop()
+            sensors.destroy()
+        # Destroys vehicles.
+        vehicles = self.world.get_actors().filter("*vehicle*")
+        for vehicle in vehicles:
+            vehicle.destroy()
         # Destroys walkers.
         walkers = self.world.get_actors().filter("*walkers*")
-        walkers_len = len(walkers)
-        for i in range(walkers_len):
-            walkers[i].destroy()
+        for walker in walkers:
+            walker.destroy()
 
         # Releases the world from synchronous mode.
         self.settings = self.world.get_settings()
