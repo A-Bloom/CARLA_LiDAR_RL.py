@@ -57,7 +57,7 @@ reward_options = {
 
     'min_speed': 1,  # in m/s
     'min_speed_punishment': -0.1,  # Will receive this if below min speed.
-    'turn_punishment': 0,  # 0 to 1. Should increase the tendency to drive straight.
+    'turn_punishment': 0  # 0 to 1. Should increase the tendency to drive straight.
 }
 
 # Action Options
@@ -69,7 +69,7 @@ action_options = {
     'steer_cap': 1,  # 0 to 1. Doesn't allow the agent to steer harder than this number.
     'throttle_cap': 1,  # 0 to 1. Doesn't allow the agent to throttle harder than this number.
     'constant_throttle': 0.5,  # 0 to 1. For action_possibility 1.
-    'turn_throttle_reduction': 0,  # 0 to 1. Reduces speed on turns for action_possibility 1.
+    'turn_throttle_reduction': 0  # 0 to 1. Reduces speed on turns for action_possibility 1.
 }
 
 # Run length variables
@@ -84,7 +84,7 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C', 'PPO'],  # This will test every other possibility with A2C and PPO
+algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
@@ -92,7 +92,7 @@ algorithm_options = {
     'learning_rate': [0.0001, 0.001, 0.01, 0.1],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': np.linspace(0.97, 0.99, 3).tolist(),
+    'gamma': np.linspace(0.97, 0.99, 3).tolist()
     # Comment out for default values.
     #'seed': None
 }
@@ -124,7 +124,7 @@ DDPG_options = {
     'action_noise': None,
     'replay_buffer_class': None,
     'replay_buffer_kwargs': None,
-    'optimize_memory_usage': False,
+    'optimize_memory_usage': False
 }
 
 # DQN Specific options
@@ -204,4 +204,4 @@ TD3_options = {
 Trainer.train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
               SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
               debugging_vars=debugging_options,lidar_vars=lidar_options, reward_vars=reward_options,
-              algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+              action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)

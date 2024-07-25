@@ -74,43 +74,44 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                 if checkpoint(algorithm, experiment):
                     # Creates Environment.
                     env = Env(**experiment, **debugging_vars)
-                    for algorithm_configuration in algorithm_configurations[configuration_index:]:
-                        print(f"Running experiment configuration {experiment_index * len(algorithm_configurations) + configuration_index + 1} of {experiments_len}")
-                        # For CnnPolicy the LiDAR "images" are already normalized.
-                        if algorithm_configuration['policy'] == 'CnnPolicy':
-                            policy_kwargs = dict(normalize_images=False)
-                        else:
-                            policy_kwargs = None
-                        # Finds the algorithm from a string and creates a model.
-                        model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
-                                                     tensorboard_log=log_dir, verbose=verbose, policy_kwargs=policy_kwargs)
-                        timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
-                        tb_dir = f"{algorithm}_{timestamp}"
-                        model_dir = f"{folder_name}/{algorithm}/{timestamp}"
-                        os.makedirs(model_dir, exist_ok=True)
-                        # Creates a file to log the parameters for this specific experiment.
-                        var_info = open(f"{model_dir}/var_info.json", 'w')
-                        json.dump([algorithm, experiment, algorithm_configuration], var_info)
-                        var_info.close()
-                        for epoch in range(epoch_index, epochs + 1):
-                            print(f"Beginning epoch {epoch} of {epochs}")
-                            # Trains the model.
-                            model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
-                            # Saves the model at each epoch.
-                            model.save(f"{model_dir}/{steps_per_epoch * epoch}")
-                            # Puts the parameter log file in each .zip folder.
-                            archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
-                            archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
-                            archive.close()
-                            # Saves how far into the experiment it is.
-                            run_info = open(f"{folder_name}/run_info.json", "w")
-                            json.dump([run, algorithm_index, experiment_index, configuration_index, epoch], run_info)
-                            run_info.close()
-                        del model
-                        os.remove(f"{model_dir}/var_info.json")
-                        epoch_index = 1
-                        configuration_index += 1
-                    env.close()
+                    try:
+                        for algorithm_configuration in algorithm_configurations[configuration_index:]:
+                            print(f"Running experiment configuration {experiment_index * len(algorithm_configurations) + configuration_index + 1} of {experiments_len}")
+                            # For CnnPolicy the LiDAR "images" are already normalized.
+                            if algorithm_configuration['policy'] == 'CnnPolicy':
+                                policy_kwargs = dict(normalize_images=False)
+                            else:
+                                policy_kwargs = None
+                            # Finds the algorithm from a string and creates a model.
+                            model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
+                                                         tensorboard_log=log_dir, verbose=verbose, policy_kwargs=policy_kwargs)
+                            timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
+                            tb_dir = f"{algorithm}_{timestamp}"
+                            model_dir = f"{folder_name}/{algorithm}/{timestamp}"
+                            os.makedirs(model_dir, exist_ok=True)
+                            # Creates a file to log the parameters for this specific experiment.
+                            var_info = open(f"{model_dir}/var_info.json", 'w')
+                            json.dump([algorithm, experiment, algorithm_configuration], var_info)
+                            var_info.close()
+                            for epoch in range(epoch_index, epochs + 1):
+                                print(f"Beginning epoch {epoch} of {epochs}")
+                                # Trains the model.
+                                model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
+                                # Saves the model at each epoch.
+                                model.save(f"{model_dir}/{steps_per_epoch * epoch}")
+                                # Puts the parameter log file in each .zip folder.
+                                archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
+                                archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
+                                archive.close()
+                                # Saves how far into the experiment it is.
+                                run_info = open(f"{folder_name}/run_info.json", "w")
+                                json.dump([run, algorithm_index, experiment_index, configuration_index, epoch], run_info)
+                                run_info.close()
+                            os.remove(f"{model_dir}/var_info.json")
+                            epoch_index = 1
+                            configuration_index += 1
+                    finally:
+                        env.close()
                     configuration_index = 0
                 experiment_index += 1
             experiment_index = 0
@@ -118,16 +119,21 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
         algorithm_index = 0
     os.remove(f"{folder_name}/run_info.json")
 
+
 def checkpoint(algorithm, experiment):
     # Makes sure that the experiment makes sense or will run without errors.
     # If you find another nonsensical combination just stick it in.
     cleared = True
     discrete = ['A2C', 'DQN', 'PPO']
     continuous = ['A2C', 'DDPG', 'PPO', 'SAC', 'TD3']
-    if ((experiment['action_format'] == 'discrete' and algorithm not in discrete) or
-            (experiment['action_format'] == 'continuous' and algorithm not in continuous) or
-            (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)):
-        cleared = False
+    try:
+        if ((experiment['action_format'] == 'discrete' and algorithm not in discrete) or
+                (experiment['action_format'] == 'continuous' and algorithm not in continuous) or
+                (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)):
+            cleared = False
+    except KeyError:
+        pass
+
     return cleared
 
 

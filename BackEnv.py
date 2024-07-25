@@ -2,6 +2,7 @@ import random
 import numpy as np
 import cv2 as cv
 import gymnasium as gym
+from CleanUp import CleanUp
 import carla
 import math
 
@@ -146,25 +147,27 @@ class BackEnv(gym.Env):
     def close(self):
         cv.destroyAllWindows()
 
-        # Destroys sensors.
-        sensors = self.world.get_actors().filter("*sensor*")
-        for sensor in sensors:
-            sensor.stop()
-            sensors.destroy()
-        # Destroys vehicles.
-        vehicles = self.world.get_actors().filter("*vehicle*")
-        for vehicle in vehicles:
-            vehicle.destroy()
-        # Destroys walkers.
-        walkers = self.world.get_actors().filter("*walkers*")
-        for walker in walkers:
-            walker.destroy()
+        CleanUp(self.world)
 
-        # Releases the world from synchronous mode.
-        self.settings = self.world.get_settings()
-        self.settings.synchronous_mode = False
-        self.settings.fixed_delta_seconds = None
-        self.world.apply_settings(self.settings)
+        # # Destroys sensors.
+        # sensors = self.world.get_actors().filter("*sensor*")
+        # for sensor in sensors:
+        #     sensor.stop()
+        #     sensor.destroy()
+        # # Destroys vehicles.
+        # vehicles = self.world.get_actors().filter("*vehicle*")
+        # for vehicle in vehicles:
+        #     vehicle.destroy()
+        # # Destroys walkers.
+        # walkers = self.world.get_actors().filter("*walkers*")
+        # for walker in walkers:
+        #     walker.destroy()
+        #
+        # # Releases the world from synchronous mode.
+        # self.settings = self.world.get_settings()
+        # self.settings.synchronous_mode = False
+        # self.settings.fixed_delta_seconds = None
+        # self.world.apply_settings(self.settings)
 
     def collided(self, data):
         self.collision_sensed = True
