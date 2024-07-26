@@ -1,5 +1,7 @@
 ## Using reinforcement learning and 2D LiDAR observations to control a car and avoid obstacles in Carla.
 
+### Overview:
+
 The purpose of this repository is to allow you to train an RL agent using stable-baselines3 algorithms to control a car 
 and avoid obstacles using only 2D LiDAR observations in the CARLA simulator. 
 It is built in a way to let you design complex experiments and have the code run all of them in sequence 
@@ -7,13 +9,21 @@ and log everything for you.
 
 ### Setup:
 
-Everything was built using [Carla 0.9.15](https://github.com/carla-simulator/carla/releases/tag/0.9.15/) and Python 3.10.
+Download the [Carla 0.9.15](https://github.com/carla-simulator/carla/releases/tag/0.9.15/) server.
 
-You might need legacy DirectX drivers found [here.](https://www.microsoft.com/en-gb/download/details.aspx?id=35&irgwc=1&OCID=AIDcmm549zy227_aff_7815_119570&tduid=%28ir__wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00%29%287815%29%28119570%29%285728363%29%28lwqs5u6ave03es170tipy%29&irclickid=_wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00)
+For Windows, you might need legacy DirectX drivers to run Carla found 
+[here.](https://www.microsoft.com/en-gb/download/details.aspx?id=35&irgwc=1&OCID=AIDcmm549zy227_aff_7815_119570&tduid=%28ir__wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00%29%287815%29%28119570%29%285728363%29%28lwqs5u6ave03es170tipy%29&irclickid=_wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00)
+
+Everything was built using [Python 3.10](https://www.python.org/downloads/release/python-31011/) 
+but other versions may work as well.
 
 Other dependencies are listed in requirements.txt and can be installed with: `pip install -r requirements.txt`
 
 Launch the Carla server before running anything else.
+
+Set up ControlPanel.py with the parameters you want and run it directly.
+
+### The Code:
 
 ControlPanel.py is where you set up your experiment. If you only have a single possibility you want to test,
 leave the value as a single value. If you want to test multiple possibilities, put two values in an array,
@@ -42,7 +52,8 @@ Either edit the default file path or run Evaluator.py in command line and add pa
 you want to evaluate.
 
 CleanUp.py just clears all the actors from the world and unlocks the world from synchronous mode.
-Very useful if you have a couple of failed runs and there are dead cars scattered all over the place.
+This is usually run by the environment but can also be run directly if during testing you have a couple of failed runs
+and there are dead cars scattered all over the place.
 
 generate_traffic.py is written by the Carla devs. 
 Launch it before launching ControlPanel.py for a more exciting environment.
@@ -54,5 +65,7 @@ ManualControl.py does exactly what it sounds like it should do.
 
 The TestBenches are simplified versions of some of the more complex pieces of code. 
 They are referenced throughout the comments.
+
+### Disclaimer:
 
 This script has in no means been tested in all configurations, use at your own risk.
