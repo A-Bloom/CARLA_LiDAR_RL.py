@@ -25,6 +25,7 @@ class Env(BackEnv):
                  delta_seconds=0.05,
                  Verbose=False,
                  Show=True,
+                 Manual=False,
                  observation_format='grid',
                  action_format='discrete',
                  action_possibilities=1,
@@ -246,7 +247,8 @@ class Env(BackEnv):
             print(f"Brake Action: {action[2]} Brake: {brake}")
             print(f"Velocity: {abs_velocity} Displacement: {displacement}")
             print(f"Distance to target: {target} Reward: {self.reward}")
-            # cv.imwrite(f"Output/Images/{time.time()}.jpg", np.dstack( (self.blanks, self.blanks, self.lidar_data[1] * 255)))
+            # cv.imwrite(f"Output/Images/{time.time()}_lidar.jpg", np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
+            # cv.imwrite(f"Output/Images/{time.time()}_pic.jpg", self.camera_data)
 
         if self.Show:
             cv.imshow('Top View', self.camera_data)

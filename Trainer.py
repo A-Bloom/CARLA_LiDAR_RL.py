@@ -1,7 +1,8 @@
 # TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
-# TODO: Fix the restart feature so that it places continued policies in the correct folder.
+# TODO: !!Fix the restart feature so that it places continued policies in the correct folder
+#  and continues from the current model!!
 # TODO: Add support for algorithms in stable baselines3 contrib and SBX.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
@@ -44,7 +45,7 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
         run_info.close()
 
     if debugging_vars['Verbose']:
-        verbose = 2
+        verbose = 1
     else:
         verbose = 0
 

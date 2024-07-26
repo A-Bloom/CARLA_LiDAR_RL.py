@@ -1,4 +1,5 @@
-import Trainer
+from Trainer import train
+from ManualControl import ManualControl
 import numpy as np
 
 # This ControlPanel contains the default values for a run, except algorithm and algorithm values which contain examples.
@@ -21,13 +22,15 @@ connection_options = {
 # Debugging Options
 debugging_options = {
     'Show': True,
-    'Verbose': False
+    'Verbose': True,
+    'Manual': False  # Can be used to let you drive and give you a feel for what actions give what reward.
+    # Just make sure Verbose = True.
 }
 
 # LiDAR/Observation Options
 lidar_options = {
     'Lidar_Depth': '30',  # Furthest distance LiDAR reaches in meters. Must be string.
-    'Lidar_Resolution': 4,  # Points generated per meter.
+    'Lidar_Resolution': 6,  # Points generated per meter.
     'Lidar_PPS': '9000',  # Points/Second. Must be string.
     'Lidar_RPS': '7,',  # Rotations/Second. Must be string.
     'observation_format': 'grid',  # 'points', 'grid' or 'image'.
@@ -62,7 +65,7 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': 'discrete',  # 'discrete' or 'continuous'
+    'action_format': 'continuous',  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
     'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
@@ -75,8 +78,8 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 2,  # Saves the policy every epoch.
-    'steps_per_epoch': 1000,
+    'epochs': 10,  # Saves the policy every epoch.
+    'steps_per_epoch': 10000,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 
@@ -84,12 +87,12 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C']  # This will test every other possibility with A2C and PPO. Must be an array.
+algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': 0.0001,
+    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
     'gamma': np.linspace(0.97, 0.99, 3).tolist()
@@ -201,7 +204,10 @@ TD3_options = {
     'target_noise_clip': 0.5
 }
 
-Trainer.train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-              SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
-              debugging_vars=debugging_options,lidar_vars=lidar_options, reward_vars=reward_options,
-              action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+if debugging_options['Manual']:
+    ManualControl(connection_options, debugging_options, lidar_options,reward_options, action_options)
+else:
+    train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
+          SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
+          debugging_vars=debugging_options, lidar_vars=lidar_options, reward_vars=reward_options,
+          action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)

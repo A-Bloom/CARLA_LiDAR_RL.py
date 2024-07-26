@@ -1,4 +1,5 @@
-import Trainer
+from Trainer import train
+from ManualControl import ManualControl
 import numpy as np
 
 # This ControlPanel contains the default values for a run, except algorithm and algorithm values which contain examples.
@@ -21,7 +22,9 @@ connection_options = {
 # Debugging Options
 debugging_options = {
     'Show': True,
-    'Verbose': False
+    'Verbose': False,
+    'Manual': False  # Can be used to let you drive and give you a feel for what actions give what reward.
+    # Just make sure Verbose = True.
 }
 
 # LiDAR/Observation Options
@@ -33,7 +36,7 @@ lidar_options = {
     'observation_format': 'grid',  # 'points', 'grid' or 'image'.
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
-    # image is grid with 2 more layers "np.dstack"ed on top to create an image, (normalized version of Lidar View).
+    # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
     'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
 }
 
@@ -201,7 +204,10 @@ TD3_options = {
     'target_noise_clip': 0.5
 }
 
-Trainer.train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-              SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
-              debugging_vars=debugging_options,lidar_vars=lidar_options, reward_vars=reward_options,
-              action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+if debugging_options['Manual']:
+    ManualControl(connection_options, debugging_options, lidar_options, reward_options, action_options)
+else:
+    train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
+          SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
+          debugging_vars=debugging_options, lidar_vars=lidar_options, reward_vars=reward_options,
+          action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)

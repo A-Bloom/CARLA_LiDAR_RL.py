@@ -5,7 +5,12 @@ and avoid obstacles using only 2D LiDAR observations in the CARLA simulator.
 It is built in a way to let you design complex experiments and have the code run all of them in sequence 
 and log everything for you.
 
-Everything was built using Carla 0.9.15 (https://github.com/carla-simulator/carla/releases/tag/0.9.15/) and Python 3.10.
+### Setup:
+
+Everything was built using [Carla 0.9.15](https://github.com/carla-simulator/carla/releases/tag/0.9.15/) and Python 3.10.
+
+You might need legacy DirectX drivers found [here.](https://www.microsoft.com/en-gb/download/details.aspx?id=35&irgwc=1&OCID=AIDcmm549zy227_aff_7815_119570&tduid=%28ir__wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00%29%287815%29%28119570%29%285728363%29%28lwqs5u6ave03es170tipy%29&irclickid=_wf1t6jfdiwkfdzevufswalhllm2xdqxerm0icgxq00)
+
 Other dependencies are listed in requirements.txt and can be installed with: `pip install -r requirements.txt`
 
 Launch the Carla server before running anything else.

@@ -63,7 +63,7 @@ class BackEnv(gym.Env):
         self.camera_bp = self.bps.find('sensor.camera.rgb')
         self.collision_bp = self.bps.find('sensor.other.collision')
 
-        self.tesla_bp.set_attribute('color', '255, 110, 199')  # To make the agent highly visible.
+        # self.tesla_bp.set_attribute('color', '255, 110, 199')  # To make the agent highly visible.
 
         while True:  # Occasionally the agent can't spawn because there is something already there.
             try:
@@ -146,28 +146,7 @@ class BackEnv(gym.Env):
 
     def close(self):
         cv.destroyAllWindows()
-
         CleanUp(self.world)
-
-        # # Destroys sensors.
-        # sensors = self.world.get_actors().filter("*sensor*")
-        # for sensor in sensors:
-        #     sensor.stop()
-        #     sensor.destroy()
-        # # Destroys vehicles.
-        # vehicles = self.world.get_actors().filter("*vehicle*")
-        # for vehicle in vehicles:
-        #     vehicle.destroy()
-        # # Destroys walkers.
-        # walkers = self.world.get_actors().filter("*walkers*")
-        # for walker in walkers:
-        #     walker.destroy()
-        #
-        # # Releases the world from synchronous mode.
-        # self.settings = self.world.get_settings()
-        # self.settings.synchronous_mode = False
-        # self.settings.fixed_delta_seconds = None
-        # self.world.apply_settings(self.settings)
 
     def collided(self, data):
         self.collision_sensed = True
