@@ -1,8 +1,6 @@
 # TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
-# TODO: !!Fix the restart feature so that it places continued policies in the correct folder
-#  and continues from the current model!!
 # TODO: Add support for algorithms in stable baselines3 contrib and SBX.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
@@ -83,17 +81,33 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                                 policy_kwargs = dict(normalize_images=False)
                             else:
                                 policy_kwargs = None
-                            # Finds the algorithm from a string and creates a model.
-                            model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
-                                                         tensorboard_log=log_dir, verbose=verbose, policy_kwargs=policy_kwargs)
-                            timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
-                            tb_dir = f"{algorithm}_{timestamp}"
-                            model_dir = f"{folder_name}/{algorithm}/{timestamp}"
-                            os.makedirs(model_dir, exist_ok=True)
-                            # Creates a file to log the parameters for this specific experiment.
-                            var_info = open(f"{model_dir}/var_info.json", 'w')
-                            json.dump([algorithm, experiment, algorithm_configuration], var_info)
-                            var_info.close()
+
+                            if restart is None:
+                                # Finds the algorithm from a string and creates a model.
+                                model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
+                                                             tensorboard_log=log_dir, verbose=verbose,
+                                                             policy_kwargs=policy_kwargs)
+                                timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
+                                tb_dir = f"{algorithm}_{timestamp}"
+                                model_dir = f"{folder_name}/{algorithm}/{timestamp}"
+                                os.makedirs(model_dir, exist_ok=True)
+                                # Creates a file to log the parameters for this specific experiment.
+                                var_info = open(f"{model_dir}/var_info.json", 'w')
+                                json.dump([algorithm, experiment, algorithm_configuration], var_info)
+                                var_info.close()
+                            else:
+                                # If the experiment is restarting this finds the last policy
+                                # and uses it to build the model.
+                                model_subdir = max(os.listdir(f"{folder_name}/{algorithm}"))
+                                model_names = os.listdir(f"{folder_name}/{algorithm}/{model_subdir}")
+                                model_names.sort()
+                                model_path = f"{folder_name}/{algorithm}/{model_subdir}/{model_names[-2]}"
+                                model = globals()[algorithm].load(model_path, env)
+
+                                model_dir = f"{folder_name}/{algorithm}/{model_subdir}"
+                                tb_dir = f"{algorithm}_{model_subdir}"
+                                restart = None
+
                             for epoch in range(epoch_index, epochs + 1):
                                 print(f"Beginning epoch {epoch} of {epochs}")
                                 # Trains the model.

@@ -65,7 +65,7 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': 'continuous',  # 'discrete' or 'continuous'
+    'action_format': 'discrete',  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
     'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
@@ -78,8 +78,8 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 10,  # Saves the policy every epoch.
-    'steps_per_epoch': 10000,
+    'epochs': 4,  # Saves the policy every epoch.
+    'steps_per_epoch': 20,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 
@@ -92,10 +92,10 @@ algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C a
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
+    'learning_rate': [0.0001, 0.001, 0.01],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': np.linspace(0.97, 0.99, 3).tolist()
+    'gamma': [0.99, 0.95]
     # Comment out for default values.
     #'seed': None
 }

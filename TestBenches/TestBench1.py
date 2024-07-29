@@ -1,8 +1,13 @@
-import numpy as np
-a = np.zeros((2, 2))
-b = np.ones((2, 2))
-c = np.array([[2, 2], [2, 2]])
+import os
+import sys
 
-print(np.dstack((a, b, c)))
-print(np.stack((a, b, c)))
+algorithm = 'PPO'
 
+folder_name = sys.argv[1]
+
+model_dir = max(os.listdir(f"{folder_name}/{algorithm}"))
+model_names = os.listdir(f"{folder_name}/{algorithm}/{model_dir}")
+model_names.sort()
+model_path = f"{folder_name}/{algorithm}/{model_dir}/{model_names[-2]}"
+
+print(model_path)
