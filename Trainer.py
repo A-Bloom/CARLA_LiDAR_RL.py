@@ -111,6 +111,7 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                             os.remove(f"{model_dir}/var_info.json")
                             epoch_index = 1
                             configuration_index += 1
+                            del model
                     finally:
                         env.close()
                     configuration_index = 0

@@ -27,6 +27,7 @@ def evaluate(path_to_zip, debugging_vars, n_eval_episodes):
 if len(sys.argv) == 1:
     try:
         print(f"Evaluating {path}")
+        debugging_options['Show'] = True
         evaluate(path, debugging_options, episodes_to_evaluate)
     except:
         print(f"{path} could not be evaluated. Unknown Error.")

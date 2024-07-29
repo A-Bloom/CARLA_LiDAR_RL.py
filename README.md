@@ -59,9 +59,12 @@ generate_traffic.py is written by the Carla devs.
 Launch it before launching ControlPanel.py for a more exciting environment.
 
 The CarlaPath files are files to allow Carla to be re-launched by the client if it crashes. 
-It should be modified per your system. It currently doesn't work properly. Try crashing the server on purpose...
+They should be modified per your system. It currently doesn't work properly. I can't figure out why not.
+Try crashing the server on purpose...
 
-ManualControl.py does exactly what it sounds like it should do.
+ManualControl.py does exactly what it sounds like it should do. It can be called by setting Manual=True in the 
+ControlPanel or by calling it directly to get the defaults. Along with Verbose=True it can be helpful for understanding 
+if your action reward structure is working properly.
 
 The TestBenches are simplified versions of some of the more complex pieces of code. 
 They are referenced throughout the comments.
