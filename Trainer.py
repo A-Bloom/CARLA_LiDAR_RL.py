@@ -1,7 +1,7 @@
 # TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
-# TODO: Add support for algorithms in stable baselines3 contrib and SBX.
+# TODO: Add support for algorithms in stable baselines3-contrib and SBX.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
 from datetime import datetime

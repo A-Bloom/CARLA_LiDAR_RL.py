@@ -52,7 +52,7 @@ reward_options = {
 
     'reward_for_destination': 0.5,
     # For being closer to the destination. Normalized by initial distance from destination.
-    'destination_bonus': True,  # Boosts the reward to 1 on arrival within 1 meter.
+    'destination_bonus': 1,  # Boosts the reward to this on arrival within 0.5 meters.
 
     'exponentialize_reward': 1,  # Will use this number as an exponent on the reward
     # to make it exponentially larger closer to the goal.
@@ -102,7 +102,7 @@ algorithm_options = {
 
 # A2C specific options
 A2C_options = {
-    'n_steps': 5,
+    'n_steps': 5,  # A2C does not log unless n_steps is lower than this.
     'gae_lambda': 1.0,
     'ent_coef': 0.0,
     'vf_coef': 0.5,

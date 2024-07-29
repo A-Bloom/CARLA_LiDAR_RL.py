@@ -157,6 +157,8 @@ class Env(BackEnv):
         brake = 0
         reverse = False
 
+
+
         # Action function, see DefaultControlPanel for details on action_format and action_possibilities.
         if self.action_format == 'discrete':
             steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor) * self.steer_cap
@@ -172,6 +174,7 @@ class Env(BackEnv):
                 if self.action_possibilities == 3:
                     brake = action[2] * 0.5
 
+
         elif self.action_format == 'continuous':
             steer = action[0] * self.steer_cap
             if self.action_possibilities == 0:
@@ -184,7 +187,7 @@ class Env(BackEnv):
                     elif self.action_possibilities > 1:
                         reverse = True
                 if self.action_possibilities == 3:
-                    brake = action[2].astype(np.float64)
+                    brake = action[2] * 1  # * 1 is to turn it into a float
 
         self.tesla.apply_control(carla.VehicleControl(throttle=throttle, steer=steer, brake=brake, reverse=reverse))
 

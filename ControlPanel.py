@@ -22,7 +22,7 @@ connection_options = {
 # Debugging Options
 debugging_options = {
     'Show': True,
-    'Verbose': True,
+    'Verbose': False,
     'Manual': False  # Can be used to let you drive and give you a feel for what actions give what reward.
     # Just make sure Verbose = True.
 }
@@ -65,9 +65,9 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': 'discrete',  # 'discrete' or 'continuous'
+    'action_format': 'continuous',  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
-    'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
+    'action_possibilities': 3,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
     'steer_cap': 1,  # 0 to 1. Doesn't allow the agent to steer harder than this number.
     'throttle_cap': 1,  # 0 to 1. Doesn't allow the agent to throttle harder than this number.
@@ -87,7 +87,7 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
+algorithms = ['PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
