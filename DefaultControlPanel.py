@@ -16,7 +16,7 @@ connection_options = {
     # 'host' ': '10.230.117.122',
     'port': 2000,
     'delta_seconds': 0.05  # Simulated seconds per frame.
-    # Can also be an array for testing how much accuracy degrades with faster training time.
+    # delta_seconds can also be an array for testing how much accuracy degrades with faster training time.
 }
 
 # Debugging Options

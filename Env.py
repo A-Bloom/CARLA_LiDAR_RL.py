@@ -163,7 +163,7 @@ class Env(BackEnv):
         if self.action_format == 'discrete':
             steer = ((action[0] - self.discrete_augmentor) / self.discrete_augmentor) * self.steer_cap
             if self.action_possibilities == 0:
-                throttle = self.constant_throttle * (1 - abs(steer)) * (1 - self.turn_throttle_reduction)
+                throttle = self.constant_throttle * (1 - abs(steer) * self.turn_throttle_reduction)
             elif self.action_possibilities > 0:
                 throttle = abs((action[1] - self.discrete_augmentor) / self.discrete_augmentor) * self.throttle_cap
                 if action[1] < self.discrete_augmentor:
@@ -178,7 +178,7 @@ class Env(BackEnv):
         elif self.action_format == 'continuous':
             steer = action[0] * self.steer_cap
             if self.action_possibilities == 0:
-                throttle = self.constant_throttle * (1 - abs(steer)) * (1 - self.turn_throttle_reduction)
+                throttle = self.constant_throttle * (1 - abs(steer) * self.turn_throttle_reduction)
             elif self.action_possibilities > 0:
                 throttle = abs(action[1]) * self.throttle_cap
                 if action[1] < 0:
@@ -213,7 +213,7 @@ class Env(BackEnv):
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
             target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = ((velocity_reward + displacement_reward + target_reward)*(1-self.turn_punishment))
+            self.reward = (velocity_reward + displacement_reward + target_reward) * (1 - self.turn_punishment * abs(steer))
 
             if self.reward < 0:
                 self.reward = -(self.reward ** self.exponentialize_reward)
@@ -224,6 +224,7 @@ class Env(BackEnv):
             abs_velocity = self.min_speed
             displacement = 0
             target = self.distance_to_target
+
 
         # If it is going too slow it gets penalized.
         # You might want to consider self.reward -= self.min_speed_punishment as well.
