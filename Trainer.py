@@ -1,7 +1,7 @@
 # TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
-# TODO: Add support for algorithms in stable baselines3-contrib and SBX.
+# TODO: Add support for HER and algorithms in stable baselines3-contrib and SBX.
 from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 from stable_baselines3.common import utils
 from datetime import datetime
@@ -9,6 +9,7 @@ from sys import platform
 from subprocess import Popen
 from pathlib import Path
 from Env import Env
+import traceback
 import zipfile
 import json
 import copy
@@ -107,21 +108,24 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                                 model_dir = f"{folder_name}/{algorithm}/{model_subdir}"
                                 tb_dir = f"{algorithm}_{model_subdir}"
                                 restart = None
-
-                            for epoch in range(epoch_index, epochs + 1):
-                                print(f"Beginning epoch {epoch} of {epochs}")
-                                # Trains the model.
-                                model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
-                                # Saves the model at each epoch.
-                                model.save(f"{model_dir}/{steps_per_epoch * epoch}")
-                                # Puts the parameter log file in each .zip folder.
-                                archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
-                                archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
-                                archive.close()
-                                # Saves how far into the experiment it is.
-                                run_info = open(f"{folder_name}/run_info.json", "w")
-                                json.dump([run, algorithm_index, experiment_index, configuration_index, epoch], run_info)
-                                run_info.close()
+                            try:  # If an experiment fails while training the error is printed but the run can still
+                                # continue with the next experiment.
+                                for epoch in range(epoch_index, epochs + 1):
+                                    print(f"Beginning epoch {epoch} of {epochs}")
+                                    # Trains the model.
+                                    model.learn(total_timesteps=steps_per_epoch, reset_num_timesteps=False, tb_log_name=tb_dir)
+                                    # Saves the model at each epoch.
+                                    model.save(f"{model_dir}/{steps_per_epoch * epoch}")
+                                    # Puts the parameter log file in each .zip folder.
+                                    archive = zipfile.ZipFile(f"{model_dir}/{steps_per_epoch * epoch}.zip", 'a')
+                                    archive.write(f"{model_dir}/var_info.json", os.path.basename(f"{model_dir}/var_info.json"))
+                                    archive.close()
+                                    # Saves how far into the experiment it is.
+                                    run_info = open(f"{folder_name}/run_info.json", "w")
+                                    json.dump([run, algorithm_index, experiment_index, configuration_index, epoch], run_info)
+                                    run_info.close()
+                            except Exception:
+                                traceback.print_exc()
                             os.remove(f"{model_dir}/var_info.json")
                             epoch_index = 1
                             configuration_index += 1
