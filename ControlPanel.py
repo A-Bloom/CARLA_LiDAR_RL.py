@@ -16,7 +16,7 @@ connection_options = {
     # 'host' ': '10.230.117.122',
     'port': 2000,
     'delta_seconds': 0.05  # Simulated seconds per frame.
-    # Can also be an array for testing how much accuracy degrades with faster training time.
+    # delta_seconds can also be an array for testing how much accuracy degrades with faster training time.
 }
 
 # Debugging Options
@@ -30,13 +30,13 @@ debugging_options = {
 # LiDAR/Observation Options
 lidar_options = {
     'Lidar_Depth': '30',  # Furthest distance LiDAR reaches in meters. Must be string.
-    'Lidar_Resolution': 6,  # Points generated per meter.
+    'Lidar_Resolution': 4,  # Points generated per meter.
     'Lidar_PPS': '9000',  # Points/Second. Must be string.
     'Lidar_RPS': '7,',  # Rotations/Second. Must be string.
     'observation_format': 'grid',  # 'points', 'grid' or 'image'.
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
-    # image is grid with 2 more layers "np.dstack"ed on top to create an image, (normalized version of Lidar View).
+    # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
     'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
 }
 
@@ -52,7 +52,7 @@ reward_options = {
 
     'reward_for_destination': 0.5,
     # For being closer to the destination. Normalized by initial distance from destination.
-    'destination_bonus': True,  # Boosts the reward to 1 on arrival within 1 meter.
+    'destination_bonus': 1,  # Boosts the reward to this on arrival within 0.5 meters.
 
     'exponentialize_reward': 1,  # Will use this number as an exponent on the reward
     # to make it exponentially larger closer to the goal.
@@ -65,9 +65,9 @@ reward_options = {
 
 # Action Options
 action_options = {
-    'action_format': 'continuous',  # 'discrete' or 'continuous'
+    'action_format': 'discrete',  # 'discrete' or 'continuous'
     'discrete_actions': 21,  # Only for discrete steer and or throttle, must be odd!
-    'action_possibilities': 3,  # 0 for steer, 1 for throttle forward and steer,
+    'action_possibilities': 1,  # 0 for steer, 1 for throttle forward and steer,
     # 2 for throttle and steer, 3 for throttle, steer and break.
     'steer_cap': 1,  # 0 to 1. Doesn't allow the agent to steer harder than this number.
     'throttle_cap': 1,  # 0 to 1. Doesn't allow the agent to throttle harder than this number.
@@ -78,8 +78,8 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 4,  # Saves the policy every epoch.
-    'steps_per_epoch': 20,
+    'epochs': 10,  # Saves the policy every epoch.
+    'steps_per_epoch': 10000,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 
@@ -87,22 +87,22 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
+algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': [0.0001, 0.001, 0.01],
+    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': [0.99, 0.95]
+    'gamma': np.linspace(0.97, 0.99, 3).tolist()
     # Comment out for default values.
     #'seed': None
 }
 
 # A2C specific options
 A2C_options = {
-    'n_steps': 5,
+    'n_steps': 5,  # A2C does not log unless n_steps is lower than this.
     'gae_lambda': 1.0,
     'ent_coef': 0.0,
     'vf_coef': 0.5,
@@ -205,7 +205,7 @@ TD3_options = {
 }
 
 if debugging_options['Manual']:
-    ManualControl(connection_options, debugging_options, lidar_options,reward_options, action_options)
+    ManualControl(connection_options, debugging_options, lidar_options, reward_options, action_options)
 else:
     train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
           SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,

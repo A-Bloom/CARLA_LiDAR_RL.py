@@ -234,7 +234,6 @@ class Env(BackEnv):
         # As long as it is relatively close to the destination its doing fine.
         if target < 0.5:
             self.reward = self.destination_bonus
-            self.done = True
 
         if self.collision_sensed:
             self.reward = -1
