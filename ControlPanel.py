@@ -85,7 +85,7 @@ action_options = {
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
     'epochs': 10,  # Saves the policy every epoch.
-    'steps_per_epoch': 10000,
+    'steps_per_epoch': 100,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 

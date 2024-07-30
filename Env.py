@@ -324,8 +324,8 @@ class Env(BackEnv):
                     if (-1.5 <= self.lidar_points[1][i][0] <= 1.5) and (0 <= self.lidar_points[1][i][1] <= self.collision_course_range):
                         if math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1]) < self.distance_to_collision_object:
                             self.distance_to_collision_object = math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1])
-
-            self.observation = self.lidar_points[1] / int(self.Lidar_Depth)
+            if self.observation_format == 'points':
+                self.observation = self.lidar_points[1] / int(self.Lidar_Depth)
 
         if self.lidar_index > self.Points_Per_Observation:
             self.lidar_index = 0
