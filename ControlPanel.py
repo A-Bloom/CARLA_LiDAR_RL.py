@@ -23,7 +23,7 @@ connection_options = {
 debugging_options = {
     'Show': True,
     'Verbose': False,
-    'Manual': False  # Can be used to let you drive and give you a feel for what actions give what reward.
+    'Manual': True  # Can be used to let you drive and give you a feel for what actions give what reward.
     # Just make sure Verbose = True.
 }
 
@@ -60,7 +60,13 @@ reward_options = {
 
     'min_speed': 1,  # in m/s
     'min_speed_punishment': -0.1,  # Will receive this if below min speed.
-    'turn_punishment': 0  # 0 to 1. Should increase the tendency to drive straight.
+    'turn_punishment': 0,  # 0 to 1. Should increase the tendency to drive straight.
+
+    # If an object is in front of and within the collision_course_range of the car, the reward is calculated as:
+    # other_rewards - (1 - distance_to_collision_object/collision_course_range) * collision_course_punishment
+    'collision_course_punishment': 0.5,
+    'collision_course_range': 10  # Must always be more than 0 even if collision_course_punishment is 0.
+
 }
 
 # Action Options

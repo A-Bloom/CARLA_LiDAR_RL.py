@@ -93,6 +93,7 @@ class BackEnv(gym.Env):
         self.lidar_data = np.zeros((2, self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
         self.blanks = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
         self.blanks[round(self.Lidar_Field/2-0.5)][round(self.Lidar_Field/2-0.5)] = 1
+        self.lidar_points = np.zeros((2, self.Points_Per_Observation, 2), dtype=np.float32)
         self.lidar_index = 0
         # LiDAR listener is in Env.py
 

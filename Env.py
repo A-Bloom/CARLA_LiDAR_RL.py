@@ -44,11 +44,17 @@ class Env(BackEnv):
                  min_speed_punishment=-0.1,
                  exponentialize_reward=1,
                  steps_b4_reset=10000,
-                 destination_bonus=True,
-                 turn_punishment=0
+                 destination_bonus=1,
+                 turn_punishment=0,
+                 collision_course_punishment=0.5,
+                 collision_course_range=3
                  ):
 
+
         if 'done' not in self.__dict__:
+            self.collision_course_range = collision_course_range
+            self.collision_course_punishment = collision_course_punishment
+            self.distance_to_collision_object = self.collision_course_range
             self.turn_punishment = turn_punishment
             self.destination_bonus = destination_bonus
             self.steps_b4_reset = steps_b4_reset
@@ -213,7 +219,10 @@ class Env(BackEnv):
                                (self.tesla.get_location().y - self.target_location.y) ** 2)
             target_reward = self.reward_for_destination * (1 - target / self.distance_to_target)
 
-            self.reward = (velocity_reward + displacement_reward + target_reward) * (1 - self.turn_punishment * abs(steer))
+            self.reward = ((velocity_reward + displacement_reward + target_reward) *
+                           (1 - self.turn_punishment * abs(steer)) -
+                           (1 - self.distance_to_collision_object/self.collision_course_range) *
+                           self.collision_course_punishment)
 
             if self.reward < 0:
                 self.reward = -(self.reward ** self.exponentialize_reward)
@@ -249,6 +258,7 @@ class Env(BackEnv):
             print(f"Throttle Action: {action[1]} Throttle: {throttle}")
             print(f"Brake Action: {action[2]} Brake: {brake}")
             print(f"Velocity: {abs_velocity} Displacement: {displacement}")
+            print(f"Distance to nearest forward object: {self.distance_to_collision_object}")
             print(f"Distance to target: {target} Reward: {self.reward}")
             # cv.imwrite(f"Output/Images/{time.time()}_lidar.jpg", np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
             # cv.imwrite(f"Output/Images/{time.time()}_pic.jpg", self.camera_data)
@@ -298,18 +308,24 @@ class Env(BackEnv):
         # Then when self.lidar_index > self.Points_Per_Observation only enough points to fit enter the buffer
         # and points[1] gets swapped with points[0].
         # See TestBench3 for a simplified version of this.
-        if self.observation_format == 'points':
+        if self.observation_format == 'points' or self.collision_course_punishment > 0:
             if self.lidar_index > self.Points_Per_Observation:
-                self.points[0][self.lidar_index - length:] = (
-                        ((np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation - self.lidar_index)]) /
-                        int(self.Lidar_Depth))
-                self.points[1] = self.points[0]
-                self.points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
+                self.lidar_points[0][self.lidar_index - length:] = (
+                        (np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation - self.lidar_index)])
+                self.lidar_points[1] = self.lidar_points[0]
+                self.lidar_points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             else:
-                self.points[0][(self.lidar_index - length):self.lidar_index] = np.dstack((x_raw, y_raw)) / int(
-                    self.Lidar_Depth)
+                self.lidar_points[0][(self.lidar_index - length):self.lidar_index] = np.dstack((x_raw, y_raw))
 
-            self.observation = self.points[1]
+            # If punishment for collision course exists then find the closest point in the range.
+            if self.collision_course_punishment > 0:
+                self.distance_to_collision_object = self.collision_course_range
+                for i in range(len(self.lidar_points[1])):
+                    if (-1.5 <= self.lidar_points[1][i][0] <= 1.5) and (0 <= self.lidar_points[1][i][1] <= self.collision_course_range):
+                        if math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1]) < self.distance_to_collision_object:
+                            self.distance_to_collision_object = math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1])
+
+            self.observation = self.lidar_points[1] / int(self.Lidar_Depth)
 
         if self.lidar_index > self.Points_Per_Observation:
             self.lidar_index = 0
