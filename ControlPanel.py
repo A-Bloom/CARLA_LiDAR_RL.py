@@ -23,7 +23,7 @@ connection_options = {
 debugging_options = {
     'Show': True,
     'Verbose': False,
-    'Manual': True  # Can be used to let you drive and give you a feel for what actions give what reward.
+    'Manual': False  # Can be used to let you drive and give you a feel for what actions give what reward.
     # Just make sure Verbose = True.
 }
 
@@ -98,10 +98,10 @@ algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C a
 algorithm_options = {
     'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
+    'learning_rate': 0.0001,
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': np.linspace(0.97, 0.99, 3).tolist()
+    'gamma': [0.99, 0.98]
     # Comment out for default values.
     #'seed': None
 }

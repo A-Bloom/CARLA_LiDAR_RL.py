@@ -46,8 +46,8 @@ class Env(BackEnv):
                  steps_b4_reset=10000,
                  destination_bonus=1,
                  turn_punishment=0,
-                 collision_course_punishment=0.5,
-                 collision_course_range=3
+                 collision_course_punishment=0,
+                 collision_course_range=10
                  ):
 
 

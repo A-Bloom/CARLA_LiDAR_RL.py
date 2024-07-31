@@ -64,8 +64,8 @@ reward_options = {
 
     # If an object is in front of and within the collision_course_range of the car, the reward is calculated as:
     # other_rewards - (1 - distance_to_collision_object/collision_course_range) * collision_course_punishment
-    'collision_course_punishment': 0.5,
-    'collision_course_range': 3  # Must always be more than 0 even if collision_course_punishment is 0.
+    'collision_course_punishment': 0,
+    'collision_course_range': 10  # Must always be more than 0 even if collision_course_punishment is 0.
 
 }
 

@@ -81,6 +81,7 @@ class BackEnv(gym.Env):
                                             (self.target_location.y - self.init_location.y) ** 2)
 
         # Sets up lidar attributes and attaches lidar to car.
+        # Lowest it can go without catching parts of the car in the LiDAR view.
         self.lidar_init_transform = carla.Transform(carla.Location(z=0.76))
         self.lidar_bp.set_attribute('channels', '1')
         self.lidar_bp.set_attribute('range', self.Lidar_Depth)
