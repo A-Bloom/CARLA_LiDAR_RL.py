@@ -1,4 +1,8 @@
-## Using reinforcement learning and 2D LiDAR observations to control a car and avoid obstacles in Carla.
+# <p style="text-align: center;">Using Reinforcement Learning and 2D LiDAR to Control a Vehicle and Avoid Obstacles in Carla.</p>
+
+## [See it in Action!](https://youtu.be/PDiD1zmvmRk)
+
+## Try it yourself:
 
 ### Overview:
 
