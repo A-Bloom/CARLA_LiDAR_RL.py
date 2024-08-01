@@ -2,7 +2,8 @@ from Trainer import train
 from ManualControl import ManualControl
 import numpy as np
 
-# This ControlPanel contains the default values for a run, except algorithm and algorithm values which contain examples.
+# This ControlPanel (DefaultControlPanel.py) contains the default values for a run,
+# except algorithm and algorithm values which contain examples.
 # Don't edit this. It is for reference. To run an experiment use ControlPanel.py and edit the hyperparameters there.
 # This script takes all possible combinations of environmental and learning hyperparameters and tests them.
 # To just test one option, leave it as a single value. To test multiple options, put the values in an array.
@@ -37,7 +38,17 @@ lidar_options = {
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
     # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
-    'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
+    'Points_Per_Observation': 250,  # Number of points put in the observation before resetting.
+    'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
+    # This allows you to pass the agent any variable within the class or any local variable in the step() function.
+    # For this to work you must use the policy 'MultiInputPolicy'
+    # Search through the code and find the variable name and pass it as a string. Make sure it is simple number!!
+    # For class variables drop the 'self.'
+    # If you want a run that doesn't pass anything extra use 'None'.
+    # For everything else pu it in a 2D array as shown.
+    # Even if you only have one option it needs to be in a 2D array "'extra_observations': [['displacement','target']]"
+    # or it will only use one variable for each experiment.
+
 }
 
 # Reward Options
@@ -77,8 +88,8 @@ action_options = {
     # 2 for throttle and steer, 3 for throttle, steer and break.
     'steer_cap': 1,  # 0 to 1. Doesn't allow the agent to steer harder than this number.
     'throttle_cap': 1,  # 0 to 1. Doesn't allow the agent to throttle harder than this number.
-    'constant_throttle': 0.5,  # 0 to 1. For action_possibility 1.
-    'turn_throttle_reduction': 0  # 0 to 1. Reduces speed on turns for action_possibility 1.
+    'constant_throttle': 0.5,  # 0 to 1. For action_possibility 0.
+    'turn_throttle_reduction': 0  # 0 to 1. Reduces speed on turns for action_possibility 0.
 }
 
 # Run length variables

@@ -1,17 +1,27 @@
-import math
+from gymnasium import spaces
+import numpy as np
 
-x = [-2, -2, -2, -3, -3, -3, -3, -3, -2, -2, -1, 0, 0, 1, 2, 3, 4, 4, 4, 4, 3, 3, 3, 3]
-y = [-4, -3, -2, -2, -1, 0, 1, 2, 2, 3, 3, 3, 2, 2, 2, 2, 2, 1, 0, -1, -1, -2, -3, -4]
+observation_space = spaces.Dict({'lidar': spaces.Box(high=1, low=-1, shape=(2, 2)), 'other': spaces.Box(high=np.inf, low=-np.inf, shape=(2,))})
 
-x_range = 4
-y_range = 1
 
-closest_collision = 100
+print(np.zeros(2))
 
-for i in range(len(x)):
-    if (-x_range <= x[i] <= x_range) and (0 <= y[i] <= y_range):
-        if math.hypot(x[i], y[i]) < closest_collision:
-            closest_collision = math.hypot(x[i], y[i])
 
-print(closest_collision)
+class AClass:
 
+    def __init__(self, var1, var2, listing):
+        self.var1 = var1
+        self.var2 = var2
+        self.listing = listing
+
+    def do_stuff(self):
+
+        var3 = 132
+
+        for thing in self.listing:
+            if thing in locals():
+                print(locals()[thing])
+            elif thing in dir(self):
+                print(getattr(self, thing))
+            else:
+                print("This variable does not exist")

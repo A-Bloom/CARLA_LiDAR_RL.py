@@ -1,3 +1,5 @@
+# TODO: Create an option to allow the experimentor to pass other observations to the agent like speed, target location
+#  or distance from collision objects.
 import math
 import warnings
 import numpy as np
@@ -47,11 +49,12 @@ class Env(BackEnv):
                  destination_bonus=1,
                  turn_punishment=0,
                  collision_course_punishment=0,
-                 collision_course_range=10
+                 collision_course_range=10,
+                 extra_observations=None
                  ):
 
-
         if 'done' not in self.__dict__:
+            self.extra_observations = extra_observations
             self.collision_course_range = collision_course_range
             self.collision_course_punishment = collision_course_punishment
             self.distance_to_collision_object = self.collision_course_range
@@ -91,30 +94,38 @@ class Env(BackEnv):
 
         self.lidar.listen(lambda data: self.create_lidar_plane(data))
 
-
         if self.Points_Per_Observation == 0:
-            # This is the number of points I assume should be in one LiDAR revolution and is defaulted to.
-            # TODO: From observation this seems to be inaccurate and a better value is 250. Figure out why.
-            #  Uncomment the cv.imwrite() near the end of step() to get images of individual observations.
+            # This is the number of points I assume should be in one LiDAR revolution and is defaulted to:
+            # TODO: From observation this formula for Points_Per_Observation seems to be inaccurate and a better value
+            #  is 250. Figure out why. Uncomment the cv.imwrite() near the end of step() to get images of individual
+            #  observations.
             self.Points_Per_Observation = round(int(self.Lidar_PPS) / int(self.Lidar_RPS))
 
         # Observation setup, see DefaultControlPanel for details.
         if self.observation_format == 'points':
-            self.observation = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
-            self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(self.Points_Per_Observation, 2),
-                                                dtype=np.float32)
-            self.points = np.zeros((2, self.Points_Per_Observation, 2), dtype=np.float32)
+            self.lidar_observation = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
+            self.lidar_observation_space = spaces.Box(low=-1.0, high=1.0, shape=(self.Points_Per_Observation, 2),
+                                                      dtype=np.float32)
         elif self.observation_format == 'grid':
-            self.observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
-            self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
-                                                dtype=np.float32)
+            self.lidar_observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
+            self.lidar_observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
+                                                      dtype=np.float32)
         elif self.observation_format == 'image':
-            self.observation = np.zeros((3, self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
-            self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(3, self.Lidar_Field, self.Lidar_Field),
-                                                dtype=np.uint8)
+            self.lidar_observation = np.zeros((3, self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
+            self.lidar_observation_space = spaces.Box(low=0.0, high=1.0, shape=(3, self.Lidar_Field, self.Lidar_Field),
+                                                      dtype=np.uint8)
         else:
             warnings.warn("Invalid observation format! Exiting...")
             exit(-1)
+
+        if self.extra_observations:
+            self.observation = {'lidar': self.lidar_observation,
+                                'extras': np.zeros(len(self.extra_observations), dtype=np.float32)}
+            self.observation_space = spaces.Dict({'lidar': self.lidar_observation_space,
+            'extras': spaces.Box(high=np.inf, low=-np.inf, shape=(len(self.extra_observations),), dtype=np.float32)})
+        else:
+            self.observation = self.lidar_observation
+            self.observation_space = self.lidar_observation_space
 
         # Action setup, see DefaultControlPanel for details.
         if self.action_format == 'discrete':
@@ -129,7 +140,7 @@ class Env(BackEnv):
         # Needed to make the lowest discrete action -1 and the highest 1.
         self.discrete_augmentor = round((self.discrete_actions - 1) / 2)
 
-        print("Initializing MidEnv")
+        print("Initializing Env")
 
     def step(self, action):
 
@@ -162,8 +173,6 @@ class Env(BackEnv):
         self.step_counter += 1
         brake = 0
         reverse = False
-
-
 
         # Action function, see DefaultControlPanel for details on action_format and action_possibilities.
         if self.action_format == 'discrete':
@@ -201,7 +210,7 @@ class Env(BackEnv):
         if not reverse:
 
             velocity = self.tesla.get_velocity()
-            abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
+            abs_velocity = math.sqrt(velocity.x ** 2 + velocity.y ** 2)  # Absolute velocity.
             velocity_reward = self.reward_for_speed * abs_velocity / self.speed_limit
             if abs_velocity > self.speed_limit:
                 velocity_reward = self.reward_for_speed - velocity_reward
@@ -221,7 +230,7 @@ class Env(BackEnv):
 
             self.reward = ((velocity_reward + displacement_reward + target_reward) *
                            (1 - self.turn_punishment * abs(steer)) -
-                           (1 - self.distance_to_collision_object/self.collision_course_range) *
+                           (1 - self.distance_to_collision_object / self.collision_course_range) *
                            self.collision_course_punishment)
 
             if self.reward < 0:
@@ -233,7 +242,6 @@ class Env(BackEnv):
             abs_velocity = self.min_speed
             displacement = 0
             target = self.distance_to_target
-
 
         # If it is going too slow it gets penalized.
         # You might want to consider self.reward -= self.min_speed_punishment as well.
@@ -252,6 +260,19 @@ class Env(BackEnv):
         if self.tesla.get_location().z < -20 or self.step_counter > self.steps_b4_reset:
             self.done = True
 
+        if self.extra_observations:
+            for index in range(len(self.extra_observations)):
+                if self.extra_observations[index] in locals():
+                    self.observation['extras'][index] = locals()[self.extra_observations[index]]
+                elif self.extra_observations[index] in dir(self):
+                    self.observation['extras'][index] = getattr(self, self.extra_observations[index])
+                else:
+                    print(f"An extra observation {self.extra_observations[index]} does not exist! "
+                          f"Check the variable name, that it is within scope and "
+                          f"that the Control Panel is formatted properly")
+                    exit()
+
+
         if self.Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
             print(f"Steering Action: {action[0]} Steering: {steer}")
@@ -269,6 +290,9 @@ class Env(BackEnv):
             # single channel lidar_data array *255 for color.
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
             cv.waitKey(1)
+
+        if self.step_counter % 100 == 0:
+            print(self.observation)
 
         return self.observation, self.reward, False, self.done, {}
 
@@ -300,9 +324,9 @@ class Env(BackEnv):
                 self.lidar_data[0] = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
 
             if self.observation_format == 'grid':
-                self.observation = self.lidar_data[1]
+                self.lidar_observation = self.lidar_data[1]
             elif self.observation_format == 'image':
-                self.observation = np.stack((self.blanks, self.blanks, self.lidar_data[1]))
+                self.lidar_observation = np.stack((self.blanks, self.blanks, self.lidar_data[1]))
 
         # points[0] acts as a buffer until enough data points come from the LiDAR listener for a complete observation.
         # Then when self.lidar_index > self.Points_Per_Observation only enough points to fit enter the buffer
@@ -311,7 +335,7 @@ class Env(BackEnv):
         if self.observation_format == 'points' or self.collision_course_punishment > 0:
             if self.lidar_index > self.Points_Per_Observation:
                 self.lidar_points[0][self.lidar_index - length:] = (
-                        (np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation - self.lidar_index)])
+                    (np.dstack((x_raw, y_raw)).squeeze())[:(self.Points_Per_Observation - self.lidar_index)])
                 self.lidar_points[1] = self.lidar_points[0]
                 self.lidar_points[0] = np.zeros((self.Points_Per_Observation, 2), dtype=np.float32)
             else:
@@ -321,11 +345,14 @@ class Env(BackEnv):
             if self.collision_course_punishment > 0:
                 self.distance_to_collision_object = self.collision_course_range
                 for i in range(len(self.lidar_points[1])):
-                    if (-1.5 <= self.lidar_points[1][i][0] <= 1.5) and (0 <= self.lidar_points[1][i][1] <= self.collision_course_range):
-                        if math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1]) < self.distance_to_collision_object:
-                            self.distance_to_collision_object = math.hypot(self.lidar_points[1][i][0], self.lidar_points[1][i][1])
+                    if (-1.5 <= self.lidar_points[1][i][0] <= 1.5) and (
+                            0 <= self.lidar_points[1][i][1] <= self.collision_course_range):
+                        if math.hypot(self.lidar_points[1][i][0],
+                                      self.lidar_points[1][i][1]) < self.distance_to_collision_object:
+                            self.distance_to_collision_object = math.hypot(self.lidar_points[1][i][0],
+                                                                           self.lidar_points[1][i][1])
             if self.observation_format == 'points':
-                self.observation = self.lidar_points[1] / int(self.Lidar_Depth)
+                self.lidar_observation = self.lidar_points[1] / int(self.Lidar_Depth)
 
         if self.lidar_index > self.Points_Per_Observation:
             self.lidar_index = 0

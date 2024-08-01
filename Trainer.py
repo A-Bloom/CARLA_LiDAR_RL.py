@@ -1,4 +1,4 @@
-# TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
+# TODO: Add callbacks to save the best policy and automatically delete earlier worse policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
 # TODO: Add support for HER and algorithms in stable baselines3-contrib and SBX.
