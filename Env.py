@@ -107,7 +107,7 @@ class Env(BackEnv):
             self.lidar_observation_space = spaces.Box(low=-1.0, high=1.0, shape=(self.Points_Per_Observation, 2),
                                                       dtype=np.float32)
         elif self.observation_format == 'grid':
-            self.lidar_observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.float32)
+            self.lidar_observation = np.zeros((self.Lidar_Field, self.Lidar_Field), dtype=np.uint8)
             self.lidar_observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.Lidar_Field, self.Lidar_Field),
                                                       dtype=np.float32)
         elif self.observation_format == 'image':
@@ -292,7 +292,8 @@ class Env(BackEnv):
             cv.waitKey(1)
 
         if self.step_counter % 100 == 0:
-            print(self.observation)
+            print(f"\n{self.lidar_observation}")
+            print(f"\n{self.observation}")
 
         return self.observation, self.reward, False, self.done, {}
 

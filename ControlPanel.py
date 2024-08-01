@@ -39,7 +39,7 @@ lidar_options = {
     # grid is an empty 2D array with ones representing obstacles.
     # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
     'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
-    #'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
+    # 'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
     # This allows you to pass the agent any variable within the class or any local variable in the step() function.
     # Search through the code and find the variable name and pass it as a string. Make sure it is simple number!!
     # For class variables drop the 'self.'
