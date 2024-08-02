@@ -13,6 +13,8 @@ and log everything for you.
 
 ### Setup:
 
+Memory Requirements: ~25 GB
+
 Download the [Carla 0.9.15](https://github.com/carla-simulator/carla/releases/tag/0.9.15/) server.
 
 For Windows, you might need legacy DirectX drivers to run Carla found 
@@ -25,7 +27,7 @@ Other dependencies are listed in requirements.txt and can be installed with: `pi
 
 Launch the Carla server before running anything else.
 
-Set up ControlPanel.py with the parameters you want and run it directly.
+Set up ControlPanel.py with the hyperparameters you want and run it directly.
 
 ### The Code:
 
