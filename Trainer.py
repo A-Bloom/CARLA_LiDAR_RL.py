@@ -74,9 +74,10 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                 env = Env(**experiment, **debugging_vars)
                 try:
                     for algorithm_configuration in algorithm_configurations[configuration_index:]:
+                        experiment_number = experiment_index * len(algorithm_configurations) + configuration_index + 1
                         # Makes sure the experiment makes sense.
-                        if checkpoint(algorithm, experiment, algorithm_configuration):
-                            print(f"Running experiment configuration {experiment_index * len(algorithm_configurations) + configuration_index + 1} of {experiments_len}")
+                        if checkpoint(algorithm, experiment, algorithm_configuration, experiment_number):
+                            print(f"Running experiment configuration {experiment_number} of {experiments_len}")
                             # For CnnPolicy the LiDAR "images" are already normalized.
                             if algorithm_configuration['policy'] == 'CnnPolicy':
                                 policy_kwargs = dict(normalize_images=False)
@@ -140,7 +141,7 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
     os.remove(f"{folder_name}/run_info.json")
 
 
-def checkpoint(algorithm, experiment, algorithm_configuration):
+def checkpoint(algorithm, experiment, algorithm_configuration, experiment_number):
     # Makes sure that the experiment makes sense or will run without errors.
     # If you find another nonsensical combination just stick it in.
     cleared = True
@@ -152,9 +153,10 @@ def checkpoint(algorithm, experiment, algorithm_configuration):
                 (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)) or
                 (experiment['extra_observations'] and algorithm_configuration['policy'] != 'MultiInputPolicy') or
                 (not experiment['extra_observations'] and algorithm_configuration['policy'] == 'MultiInputPolicy')):
+            print(f"Experiment {experiment_number} failed the checkpoint. Moving on to experiment {experiment_number + 1}")
             cleared = False
     except KeyError:
-        pass
+        print("Key Error in checkpoint. Checkpoint disabled.")
 
     return cleared
 

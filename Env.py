@@ -1,5 +1,3 @@
-# TODO: Create an option to allow the experimentor to pass other observations to the agent like speed, target location
-#  or distance from collision objects.
 import math
 import warnings
 import numpy as np
