@@ -38,15 +38,16 @@ lidar_options = {
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
     # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
-    'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
-    # 'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
-    # This allows you to pass the agent any variable within the class or any local variable in the step() function.
+    'Points_Per_Observation': 250,  # Number of points put in the observation before resetting.
+    'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
+    # This allows you to pass the agent any variable within the Env class or any local variable in the step() function.
     # Search through the code and find the variable name and pass it as a string. Make sure it is simple number!!
     # For class variables drop the 'self.'
     # If you want a run that doesn't pass anything extra use 'None'.
-    # For everything else pu it in a 2D array as shown.
+    # For everything else put it in a 2D array as shown.
     # Even if you only have one option it needs to be in a 2D array "'extra_observations': [['displacement','target']]"
     # or it will only use one variable for each experiment.
+
 
 }
 
@@ -94,8 +95,8 @@ action_options = {
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 10,  # Saves the policy every epoch.
-    'steps_per_epoch': 10000,
+    'epochs': 2,  # Saves the policy every epoch.
+    'steps_per_epoch': 100,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 
@@ -103,15 +104,15 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
+algorithms = ['A2C']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
-    'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
+    'policy': ['MultiInputPolicy', 'MlpPolicy'],  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
-    'learning_rate': [0.0001, 0.001, 0.01, 0.1],
+    'learning_rate': 0.0001,
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': np.linspace(0.97, 0.99, 3).tolist()
+    'gamma': 0.99
     # Comment out for default values.
     #'seed': None
 }

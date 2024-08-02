@@ -48,6 +48,8 @@ lidar_options = {
     # For everything else pu it in a 2D array as shown.
     # Even if you only have one option it needs to be in a 2D array "'extra_observations': [['displacement','target']]"
     # or it will only use one variable for each experiment.
+    # If you want to use extra_observations you need to also include 'MultiInputPolicy' under the policy parameter. The
+    # code will automatically default to the other option when there extra_observations is 'None'.
 
 }
 

@@ -127,6 +127,7 @@ class Env(BackEnv):
             self.observation = self.lidar_observation
             self.observation_space = self.lidar_observation_space
 
+
         # Action setup, see DefaultControlPanel for details.
         if self.action_format == 'discrete':
             self.action_space = spaces.MultiDiscrete([self.discrete_actions, self.discrete_actions, 3])
@@ -291,10 +292,6 @@ class Env(BackEnv):
             cv.imshow('Lidar View', np.dstack((self.blanks, self.blanks, self.lidar_data[1])) * 255)
             cv.waitKey(1)
 
-        if self.step_counter % 100 == 0:
-            print(f"\n{self.lidar_observation}")
-            print(f"\n{self.observation}")
-
         return self.observation, self.reward, False, self.done, {}
 
     def create_lidar_plane(self, points):
@@ -357,6 +354,11 @@ class Env(BackEnv):
 
         if self.lidar_index > self.Points_Per_Observation:
             self.lidar_index = 0
+
+        if self.extra_observations:
+            self.observation['lidar'] = self.lidar_observation
+        else:
+            self.observation = self.lidar_observation
 
     def reset(self, **kwargs):
         super(Env, self).reset()

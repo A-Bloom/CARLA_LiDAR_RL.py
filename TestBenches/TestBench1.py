@@ -1,9 +1,4 @@
-import numpy as np
+a = {'b' : 1, 'c': 2, 'd': None}
 
-a = np.zeros((2, 2))
-b = a
-print(b)
-
-a[1][1] = 1
-
-print(b)
+if a['d']:
+    print(a['b'])
