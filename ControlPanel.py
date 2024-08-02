@@ -2,7 +2,8 @@ from Trainer import train
 from ManualControl import ManualControl
 import numpy as np
 
-# This ControlPanel contains the default values for a run, except algorithm and algorithm values which contain examples.
+# This ControlPanel (DefaultControlPanel.py) contains the default values for a run,
+# except algorithm and algorithm values which contain examples.
 # Don't edit this. It is for reference. To run an experiment use ControlPanel.py and edit the hyperparameters there.
 # This script takes all possible combinations of environmental and learning hyperparameters and tests them.
 # To just test one option, leave it as a single value. To test multiple options, put the values in an array.
@@ -29,15 +30,25 @@ debugging_options = {
 
 # LiDAR/Observation Options
 lidar_options = {
-    'Lidar_Depth': '30',  # Furthest distance LiDAR reaches in meters. Must be string.
-    'Lidar_Resolution': 4,  # Points generated per meter.
+    'Lidar_Depth': '5',  # Furthest distance LiDAR reaches in meters. Must be string.
+    'Lidar_Resolution': 1,  # Points generated per meter.
     'Lidar_PPS': '9000',  # Points/Second. Must be string.
     'Lidar_RPS': '7,',  # Rotations/Second. Must be string.
     'observation_format': 'grid',  # 'points', 'grid' or 'image'.
     # points is a list of (x,y) points from the car.
     # grid is an empty 2D array with ones representing obstacles.
     # image is grid with 2 more layers "np.stack"ed on top to create an image, (normalized version of Lidar View).
-    'Points_Per_Observation': 250  # Number of points put in the observation before resetting.
+    'Points_Per_Observation': 250,  # Number of points put in the observation before resetting.
+    'extra_observations': [['abs_velocity', 'steer', 'throttle'], None, ['distance_to_collision_object']]
+    # This allows you to pass the agent any variable within the Env class or any local variable in the step() function.
+    # Search through the code and find the variable name and pass it as a string. Make sure it is simple number!!
+    # For class variables drop the 'self.'
+    # If you want a run that doesn't pass anything extra use 'None'.
+    # For everything else put it in a 2D array as shown.
+    # Even if you only have one option it needs to be in a 2D array "'extra_observations': [['displacement','target']]"
+    # or it will only use one variable for each experiment.
+
+
 }
 
 # Reward Options
@@ -64,7 +75,7 @@ reward_options = {
 
     # If an object is in front of and within the collision_course_range of the car, the reward is calculated as:
     # other_rewards - (1 - distance_to_collision_object/collision_course_range) * collision_course_punishment
-    'collision_course_punishment': 0.5,
+    'collision_course_punishment': 0,
     'collision_course_range': 10  # Must always be more than 0 even if collision_course_punishment is 0.
 
 }
@@ -77,14 +88,14 @@ action_options = {
     # 2 for throttle and steer, 3 for throttle, steer and break.
     'steer_cap': 1,  # 0 to 1. Doesn't allow the agent to steer harder than this number.
     'throttle_cap': 1,  # 0 to 1. Doesn't allow the agent to throttle harder than this number.
-    'constant_throttle': 0.5,  # 0 to 1. For action_possibility 1.
-    'turn_throttle_reduction': 0  # 0 to 1. Reduces speed on turns for action_possibility 1.
+    'constant_throttle': 0.5,  # 0 to 1. For action_possibility 0.
+    'turn_throttle_reduction': 0  # 0 to 1. Reduces speed on turns for action_possibility 0.
 }
 
 # Run length variables
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
-    'epochs': 10,  # Saves the policy every epoch.
+    'epochs': 2,  # Saves the policy every epoch.
     'steps_per_epoch': 100,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
@@ -93,15 +104,15 @@ run_options = {
 # https://stable-baselines3.readthedocs.io/en/master/modules/base.html
 
 # All options ['A2C', 'DDPG', 'DQN', 'PPO', 'SAC', 'TD3']
-algorithms = ['A2C', 'PPO']  # This will test every other possibility with A2C and PPO. Must be an array.
+algorithms = ['A2C']  # This will test every other possibility with A2C and PPO. Must be an array.
 
 algorithm_options = {
-    'policy': 'MlpPolicy',  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
+    'policy': ['MultiInputPolicy', 'MlpPolicy'],  # 'MlpPolicy', 'CnnPolicy', 'MultiInputPolicy'
     # Logarithmic range for learning rate to be tested with other possibilities.
     'learning_rate': 0.0001,
     # To test every option in a range you can use something like this.
     # (Must be a list because numpy arrays aren't json serializable)
-    'gamma': [0.99, 0.98]
+    'gamma': 0.99
     # Comment out for default values.
     #'seed': None
 }

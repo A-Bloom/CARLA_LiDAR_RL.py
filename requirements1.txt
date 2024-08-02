@@ -1,7 +1,0 @@
-numpy==1.26.4
-torch==2.4.0+cu124
-opencv-python==4.10.0.84
-carla==0.9.15
-stable-baselines3==2.3.2
-gymnasium==0.29.1
-tensorboard==2.17.0

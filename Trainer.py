@@ -1,4 +1,4 @@
-# TODO: Add callbacks to save the best policy and automatically delete earlier failed policies
+# TODO: Add callbacks to save the best policy and automatically delete earlier worse policies
 #  to save memory and help with finding meaningful policies.
 # TODO: Add callback to terminate an experiment when no progress is being made after n steps.
 # TODO: Add support for HER and algorithms in stable baselines3-contrib and SBX.
@@ -70,12 +70,12 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
             algorithm_configurations = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
             experiments_len = len(experiments) * len(algorithm_configurations)
             for experiment in experiments[experiment_index:]:
-                # Makes sure the experiment makes sense.
-                if checkpoint(algorithm, experiment):
-                    # Creates Environment.
-                    env = Env(**experiment, **debugging_vars)
-                    try:
-                        for algorithm_configuration in algorithm_configurations[configuration_index:]:
+                # Creates Environment.
+                env = Env(**experiment, **debugging_vars)
+                try:
+                    for algorithm_configuration in algorithm_configurations[configuration_index:]:
+                        # Makes sure the experiment makes sense.
+                        if checkpoint(algorithm, experiment, algorithm_configuration):
                             print(f"Running experiment configuration {experiment_index * len(algorithm_configurations) + configuration_index + 1} of {experiments_len}")
                             # For CnnPolicy the LiDAR "images" are already normalized.
                             if algorithm_configuration['policy'] == 'CnnPolicy':
@@ -130,9 +130,9 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                             epoch_index = 1
                             configuration_index += 1
                             del model
-                    finally:
-                        env.close()
-                    configuration_index = 0
+                finally:
+                    env.close()
+                configuration_index = 0
                 experiment_index += 1
             experiment_index = 0
             algorithm_index += 1
@@ -140,16 +140,18 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
     os.remove(f"{folder_name}/run_info.json")
 
 
-def checkpoint(algorithm, experiment):
+def checkpoint(algorithm, experiment, algorithm_configuration):
     # Makes sure that the experiment makes sense or will run without errors.
     # If you find another nonsensical combination just stick it in.
     cleared = True
     discrete = ['A2C', 'DQN', 'PPO']
     continuous = ['A2C', 'DDPG', 'PPO', 'SAC', 'TD3']
     try:
-        if ((experiment['action_format'] == 'discrete' and algorithm not in discrete) or
+        if (((experiment['action_format'] == 'discrete' and algorithm not in discrete) or
                 (experiment['action_format'] == 'continuous' and algorithm not in continuous) or
-                (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)):
+                (experiment['action_possibilities'] == 0 and experiment['constant_throttle'] == 0)) or
+                (experiment['extra_observations'] and algorithm_configuration['policy'] != 'MultiInputPolicy') or
+                (not experiment['extra_observations'] and algorithm_configuration['policy'] == 'MultiInputPolicy')):
             cleared = False
     except KeyError:
         pass
