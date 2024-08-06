@@ -25,6 +25,11 @@ but other versions may work as well.
 
 Other dependencies are listed in requirements.txt and can be installed with: `pip install -r requirements.txt`
 
+Installing torch with GPU abilities is extremely finicky. If it can't be installed from the requirements.txt follow the
+instructions from [PyTorch](https://pytorch.org/get-started/locally/). Then delete the torch line and pip the 
+requirements.txt again. When you launch the ControlPanel check to make sure that it prints 'Stable Baselines3 running 
+on cuda' because running on CPU will increase training time significantly.
+
 Launch the Carla server before running anything else.
 
 Set up ControlPanel.py with the hyperparameters you want and run it directly.
@@ -36,9 +41,12 @@ leave the value as a single value. If you want to test multiple possibilities, p
 and it will test them both in sequence. You can array any number of parameters, and it will test all the combinations.
 Run ControlPanel.py to start the experiment.
 
-Alternatively, to continue a terminated experiment, you can run Trainer.py from command line with an argument specifying
-the path to the terminated experiment. Feasibly this can be used to change environmental hyperparameters mid-training 
-like action_possibilities, but be warned that changing others like LidarDepth will break the trainer.
+Alternatively, to continue a terminated experiment, you can run Trainer.py from command line with a --resume flag and an 
+argument specifying the path to the terminated experiment. Feasibly this can be used to change environmental 
+hyperparameters mid-training like action_possibilities, but be warned that changing others like LidarDepth will break 
+the trainer. You can also run the Trainer with a --upgrade flag an argument specifying the path to a single policy and
+two positional arguments for epochs and steps_per_epoch to continue training a single policy. Note that this creates a
+new experiment, and tensorboard.
 
 Trainer.py calculates, runs and logs all the experiments.
 

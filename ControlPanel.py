@@ -30,8 +30,8 @@ debugging_options = {
 
 # LiDAR/Observation Options
 lidar_options = {
-    'Lidar_Depth': '5',  # Furthest distance LiDAR reaches in meters. Must be string.
-    'Lidar_Resolution': 1,  # Points generated per meter.
+    'Lidar_Depth': '30',  # Furthest distance LiDAR reaches in meters. Must be string.
+    'Lidar_Resolution': 4,  # Points generated per meter.
     'Lidar_PPS': '9000',  # Points/Second. Must be string.
     'Lidar_RPS': '7,',  # Rotations/Second. Must be string.
     'observation_format': 'grid',  # 'points', 'grid' or 'image'.
@@ -96,7 +96,7 @@ action_options = {
 run_options = {
     'experiment_runs': 1,  # How many times to run the entire experiment.
     'epochs': 2,  # Saves the policy every epoch.
-    'steps_per_epoch': 100,
+    'steps_per_epoch': 100000,
     'output_folder': "Output"  # Cannot contain spaces or tensorboard won't launch properly.
 }
 
@@ -224,7 +224,7 @@ TD3_options = {
 if debugging_options['Manual']:
     ManualControl(connection_options, debugging_options, lidar_options, reward_options, action_options)
 else:
-    train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-          SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
-          debugging_vars=debugging_options, lidar_vars=lidar_options, reward_vars=reward_options,
-          action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+    train(algorithms=algorithms, connection_vars=connection_options, debugging_vars=debugging_options,
+          lidar_vars=lidar_options, reward_vars=reward_options, action_vars=action_options,
+          algorithm_vars=algorithm_options, A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options,
+          PPO_vars=PPO_options, SAC_vars=SAC_options, TD3_vars=TD3_options, **run_options)

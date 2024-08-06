@@ -226,7 +226,7 @@ TD3_options = {
 if debugging_options['Manual']:
     ManualControl(connection_options, debugging_options, lidar_options, reward_options, action_options)
 else:
-    train(A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options, PPO_vars=PPO_options,
-          SAC_vars=SAC_options, TD3_vars=TD3_options, connection_vars=connection_options,
-          debugging_vars=debugging_options, lidar_vars=lidar_options, reward_vars=reward_options,
-          action_vars=action_options, algorithm_vars=algorithm_options, **run_options, algorithms=algorithms)
+    train(algorithms=algorithms, connection_vars=connection_options, debugging_vars=debugging_options,
+          lidar_vars=lidar_options, reward_vars=reward_options, action_vars=action_options,
+          algorithm_vars=algorithm_options, A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options,
+          PPO_vars=PPO_options, SAC_vars=SAC_options, TD3_vars=TD3_options, **run_options)

@@ -10,6 +10,7 @@ from subprocess import Popen
 from pathlib import Path
 from Env import Env
 import traceback
+import argparse
 import zipfile
 import json
 import copy
@@ -20,9 +21,18 @@ import os
 def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Output", algorithms=['A2C'],
           connection_vars=None, debugging_vars=None, lidar_vars=None, reward_vars=None, action_vars=None,
           algorithm_vars=None, A2C_vars=None, DDPG_vars=None, DQN_vars=None, PPO_vars=None, SAC_vars=None,
-          TD3_vars=None, restart=None):
+          TD3_vars=None, resume=None, upgrade=None):
 
-    if restart is None:
+    if resume:
+        # If the experiment exists already this determines where it halted and sets the indices.
+        folder_name = resume
+        log_dir = f"{folder_name}/TBLogs"
+        run_info = open(f"{folder_name}/run_info.json")
+        run_index, algorithm_index, experiment_index, configuration_index, epoch_index = json.load(run_info)
+        epoch_index += 1
+        run_info.close()
+
+    else:
         timestamp = datetime.now()
         folder_name = (output_folder + "/Experiment" + timestamp.strftime("_%m_%d_%H_%M"))
         log_dir = f"{folder_name}/TBLogs"
@@ -35,16 +45,10 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
         experiment_info.close()
         # Indices for all loops are initialized
         run_index, algorithm_index, experiment_index, configuration_index, epoch_index = 0, 0, 0, 0, 1
-    else:
-        # If the experiment exists already this determines where it halted and sets the indices.
-        folder_name = restart
-        log_dir = f"{folder_name}/TBLogs"
-        run_info = open(f"{folder_name}/run_info.json")
-        run_index, algorithm_index, experiment_index, configuration_index, epoch_index = json.load(run_info)
-        run_info.close()
 
-    if debugging_vars['Verbose']:
-        verbose = 1
+    if debugging_vars:
+        if debugging_vars['Verbose']:
+            verbose = 1
     else:
         verbose = 0
 
@@ -63,41 +67,36 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
     print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
 
     for run in range(run_index, experiment_runs):
+
         print(f"Beginning experiment run {run + 1} of {experiment_runs}")
         for algorithm in algorithms[algorithm_index:]:
             print(f"Running algorithm {algorithm}")
             # Gets all possible algorithm configurations
             algorithm_configurations = variableUnion(locals()[f"{algorithm}_vars"], algorithm_vars, library=[])
             experiments_len = len(experiments) * len(algorithm_configurations)
+
             for experiment in experiments[experiment_index:]:
-                # Creates Environment.
-                env = Env(**experiment, **debugging_vars)
+                # Creates Environment but needs to make sure debugging_vars exist first.
+                if debugging_vars:
+                    env = Env(**experiment, **debugging_vars)
+                else:
+                    env = Env(**experiment)
+
                 try:
                     for algorithm_configuration in algorithm_configurations[configuration_index:]:
                         experiment_number = experiment_index * len(algorithm_configurations) + configuration_index + 1
+
                         # Makes sure the experiment makes sense.
                         if checkpoint(algorithm, experiment, algorithm_configuration, experiment_number):
                             print(f"Running experiment configuration {experiment_number} of {experiments_len}")
+
                             # For CnnPolicy the LiDAR "images" are already normalized.
                             if algorithm_configuration['policy'] == 'CnnPolicy':
                                 policy_kwargs = dict(normalize_images=False)
                             else:
                                 policy_kwargs = None
 
-                            if restart is None:
-                                # Finds the algorithm from a string and creates a model.
-                                model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
-                                                             tensorboard_log=log_dir, verbose=verbose,
-                                                             policy_kwargs=policy_kwargs)
-                                timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
-                                tb_dir = f"{algorithm}_{timestamp}"
-                                model_dir = f"{folder_name}/{algorithm}/{timestamp}"
-                                os.makedirs(model_dir, exist_ok=True)
-                                # Creates a file to log the parameters for this specific experiment.
-                                var_info = open(f"{model_dir}/var_info.json", 'w')
-                                json.dump([algorithm, experiment, algorithm_configuration], var_info)
-                                var_info.close()
-                            else:
+                            if resume:
                                 # If the experiment is restarting this finds the last policy
                                 # and uses it to build the model.
                                 model_subdir = max(os.listdir(f"{folder_name}/{algorithm}"))
@@ -108,7 +107,31 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
 
                                 model_dir = f"{folder_name}/{algorithm}/{model_subdir}"
                                 tb_dir = f"{algorithm}_{model_subdir}"
-                                restart = None
+                                resume = None
+
+                            elif upgrade:
+                                # If the model is upgrading...
+                                model = globals()[algorithm].load(upgrade, env)
+
+                            else:
+                                # Finds the algorithm from a string and creates a model.
+                                if algorithm_configuration:
+                                    model = globals()[algorithm](env=env, device=device, **algorithm_configuration,
+                                                             tensorboard_log=log_dir, verbose=verbose,
+                                                             policy_kwargs=policy_kwargs)
+                                else:
+                                    model = globals()[algorithm](env=env, device=device, tensorboard_log=log_dir,
+                                                                 verbose=verbose, policy_kwargs=policy_kwargs)
+
+                                timestamp = datetime.now().strftime("%m_%d_%H_%M_%S")
+                                tb_dir = f"{algorithm}_{timestamp}"
+                                model_dir = f"{folder_name}/{algorithm}/{timestamp}"
+                                os.makedirs(model_dir, exist_ok=True)
+                                # Creates a file to log the parameters for this specific experiment.
+                                var_info = open(f"{model_dir}/var_info.json", 'w')
+                                json.dump([algorithm, experiment, algorithm_configuration], var_info)
+                                var_info.close()
+
                             try:  # If an experiment fails while training the error is printed but the run can still
                                 # continue with the next experiment.
                                 for epoch in range(epoch_index, epochs + 1):
@@ -127,16 +150,20 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
                                     run_info.close()
                             except Exception:
                                 traceback.print_exc()
+
                             os.remove(f"{model_dir}/var_info.json")
                             epoch_index = 1
                             configuration_index += 1
                             del model
                 finally:
                     env.close()
+
                 configuration_index = 0
                 experiment_index += 1
+
             experiment_index = 0
             algorithm_index += 1
+
         algorithm_index = 0
     os.remove(f"{folder_name}/run_info.json")
 
@@ -196,25 +223,42 @@ def variableUnion(*args, library):
 
 # All of this is for calling the Trainer itself from commandline with the path to an existing experiment to restart it.
 if __name__ == "__main__":
-    # TODO: set this up with argparse with flags to change options like View and to allow the user to upgrade a
-    #  single zip file with flags like steps and epochs.
-    if len(sys.argv) == 2:
-        if Path(sys.argv[1]).exists() and Path(f"{sys.argv[1]}/experiment_info.json").exists() and Path(
-                f"{sys.argv[1]}/run_info.json").exists():
 
-            experiment = open(f"{sys.argv[1]}/experiment_info.json")
-            (experiment_runs, epochs, steps_per_epoch, algorithms, connection_options, debugging_options, lidar_options,
-             reward_options, action_options, algorithm_options,
-             A2C_options, DDPG_options, DQN_options, PPO_options, SAC_options, TD3_options) = json.load(experiment)
-            experiment.close()
+    parser = argparse.ArgumentParser(
+        description='Trains RL agents in CARLA. This can be called by a ControlPanel to start an experiment or through '
+                    'command line for the other options below.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-r', '--resume', help='Resume a truncated experiment run. Positional arguments will be '
+                                              'automatically discarded.', dest='path_to_experiment')
+    group.add_argument('-u', '--upgrade', help='Allows you upgrade a single .zip policy. Must be followed by '
+                                               'an epochs and a steps positional arguments.', dest='path_to_policy')
+    parser.add_argument('epochs', nargs='?', type=int)
+    parser.add_argument('steps', nargs='?', type=int)
+    args = parser.parse_args()
 
-            train(connection_vars=connection_options, debugging_vars=debugging_options, lidar_vars=lidar_options,
-                  reward_vars=reward_options, action_vars=action_options, algorithm_vars=algorithm_options,
-                  experiment_runs=experiment_runs, epochs=epochs, steps_per_epoch=steps_per_epoch,
-                  algorithms=algorithms, A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options,
-                  PPO_vars=PPO_options, SAC_vars=SAC_options, TD3_vars=TD3_options, restart=sys.argv[1])
+    if args.path_to_policy and args.epochs and args.steps and Path(args.path_to_policy).exists():
+        archive = zipfile.ZipFile(args.path_to_policy, 'r')
+        var_info = archive.open('var_info.json')
+        algorithm, experiment, algorithm_configuration = json.load(var_info)
 
-        else:
-            print("The File does not exist or the experiment was already completed. Exiting...")
+        train(epochs=args.epochs, steps_per_epoch=args.steps, algorithms=[algorithm], action_vars=experiment,
+              algorithm_vars=algorithm_configuration, upgrade=args.path_to_experiment)
+
+
+    elif (args.path_to_experiment and Path(args.path_to_experiment).exists() and
+          Path(f"{args.path_to_experiment}/experiment_info.json").exists() and
+          Path(f"{args.path_to_experiment}/run_info.json").exists()):
+
+        experiment = open(f"{args.path_to_experiment}/experiment_info.json")
+        (experiment_runs, epochs, steps_per_epoch, algorithms, connection_options, debugging_options, lidar_options,
+         reward_options, action_options, algorithm_options,
+         A2C_options, DDPG_options, DQN_options, PPO_options, SAC_options, TD3_options) = json.load(experiment)
+        experiment.close()
+
+        train(experiment_runs=experiment_runs, epochs=epochs, steps_per_epoch=steps_per_epoch,
+              algorithms=algorithms, connection_vars=connection_options, debugging_vars=debugging_options,
+              lidar_vars=lidar_options, reward_vars=reward_options, action_vars=action_options,
+              algorithm_vars=algorithm_options, A2C_vars=A2C_options, DDPG_vars=DDPG_options, DQN_vars=DQN_options,
+              PPO_vars=PPO_options, SAC_vars=SAC_options, TD3_vars=TD3_options, resume=args.path_to_experiment)
     else:
-        print("Invalid arguments. Exiting...")
+        print("The path does not exist or there is something missing from your experiment. Exiting...")
