@@ -1,15 +1,13 @@
-# <p style="text-align: center;">Using Reinforcement Learning and 2D LiDAR to Control a Vehicle and Avoid Obstacles in Carla.</p>
-
-## [See it in Action!](https://youtu.be/x7HeYeD4Tzs)
-
-## Try it yourself:
+## <p style="text-align: center;">Using Reinforcement Learning and 2D LiDAR to Control a Vehicle and Avoid Obstacles in Carla.</p>
 
 ### Overview:
 
-The purpose of this repository is to allow you to train an RL agent using stable-baselines3 algorithms to control a car 
+The purpose of this repository is to allow you to train an RL agent using Stable-Baselines3 algorithms to control a car 
 and avoid obstacles using only 2D LiDAR observations in the CARLA simulator. 
 It is built in a way to let you design complex experiments and have the code run all of them in sequence 
 and log everything for you.
+
+[See it in Action!](https://youtu.be/x7HeYeD4Tzs)
 
 ### Setup:
 
@@ -25,14 +23,16 @@ but other versions may work as well.
 
 Other dependencies are listed in requirements.txt and can be installed with: `pip install -r requirements.txt`
 
-Installing torch with GPU abilities is extremely finicky. If it can't be installed from the requirements.txt follow the
-instructions from [PyTorch](https://pytorch.org/get-started/locally/). Then delete the torch line and pip the 
+Installing torch with GPU abilities is extremely finicky. If it can't be installed from the requirements.txt follow 
+these instructions from [PyTorch](https://pytorch.org/get-started/locally/). Then delete the torch line and pip the 
 requirements.txt again. When you launch the ControlPanel check to make sure that it prints 'Stable Baselines3 running 
 on cuda' because running on CPU will increase training time significantly.
 
 Launch the Carla server before running anything else.
 
 Set up ControlPanel.py with the hyperparameters you want and run it directly.
+
+
 
 ### The Code:
 
@@ -44,9 +44,9 @@ Run ControlPanel.py to start the experiment.
 Alternatively, to continue a terminated experiment, you can run Trainer.py from command line with a --resume flag and an 
 argument specifying the path to the terminated experiment. Feasibly this can be used to change environmental 
 hyperparameters mid-training like action_possibilities, but be warned that changing others like LidarDepth will break 
-the trainer. You can also run the Trainer with a --upgrade flag an argument specifying the path to a single policy and
+the trainer. You can also run the Trainer with a --upgrade flag, an argument specifying the path to a single policy, and
 two positional arguments for epochs and steps_per_epoch to continue training a single policy. Note that this creates a
-new experiment, and tensorboard.
+new experiment and tensorboard.
 
 Trainer.py calculates, runs and logs all the experiments.
 
@@ -78,7 +78,7 @@ Try crashing the server on purpose...
 
 ManualControl.py does exactly what it sounds like it should do. It can be called by setting Manual=True in the 
 ControlPanel or by calling it directly to get the defaults. Along with Verbose=True it can be helpful for understanding 
-if your action reward structure is working properly.
+if your action and reward structures are working properly.
 
 The TestBenches are simplified versions of some of the more complex pieces of code. 
 They are referenced throughout the comments.

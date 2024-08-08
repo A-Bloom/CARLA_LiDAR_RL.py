@@ -9,7 +9,7 @@ from pathlib import Path
 from Env import Env
 
 path = r"C:\Users\abche\Documents\F1_10_Mini_Autonomous_Driving\LIDAR_1\Output\Experiment_07_19_09_09\A2C\07_19_09_09_41\500.zip"
-debugging_options = {'Show': True, 'Verbose': False}
+debugging_options = {'Show': True, 'Verbose': True}
 episodes_to_evaluate = 10
 
 
@@ -21,7 +21,12 @@ def evaluate(path_to_zip, debugging_vars, n_eval_episodes):
         env = Env(**experiment, **debugging_vars)
         model = globals()[algorithm].load(path_to_zip, env)
         print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
-        print(evaluate_policy(model, env, n_eval_episodes=n_eval_episodes))
+        # For this problem deterministic needs to be false because sometimes the agent gets stuck repeating a throttle
+        # of -1 and needs some stochasticity to get it out of that loop.
+        stats = evaluate_policy(model, env, n_eval_episodes=n_eval_episodes, deterministic=False)
+        print( "  ________________________________________________________________________ ")
+        print(f" | Mean Reward: {stats[0]} Standard Deviation: {stats[1]} |")
+        print( "  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ ")
     finally:
         env.close()
 

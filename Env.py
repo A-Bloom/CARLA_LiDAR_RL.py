@@ -274,6 +274,7 @@ class Env(BackEnv):
 
         if self.Verbose and (self.step_counter % 100 == 0) and (self.step_counter != 0):
             print("-------------------------------------")
+            print(f"Step {self.step_counter} of {self.steps_b4_reset}")
             print(f"Steering Action: {action[0]} Steering: {steer}")
             print(f"Throttle Action: {action[1]} Throttle: {throttle}")
             print(f"Brake Action: {action[2]} Brake: {brake}")
