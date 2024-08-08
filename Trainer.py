@@ -13,6 +13,7 @@ import traceback
 import argparse
 import zipfile
 import json
+import torch
 import copy
 import sys
 import os
@@ -56,15 +57,21 @@ def train(experiment_runs=1, epochs=10, steps_per_epoch=1000, output_folder="Out
     if platform == "linux":
         os.popen(f"python -m tensorboard.main --logdir={log_dir}")
         print(f"Opening TensorBoard at {log_dir}")
-        device = "cuda:1"  # !!Make sure to change this per your device's configuration!!
     elif platform == "win32":
         Popen(f"py -m tensorboard.main --logdir={log_dir}", creationflags=0x00000008)
         print(f"Opening TensorBoard at {log_dir}")
 
+    # If you have more than one graphics card, run Stable-Baselines3 on the second card because Carla is probably
+    # running on the first.
+    if torch.cuda.device_count() > 1:
+        device = 'cuda:1'
+    else:
+        device = 'auto'
+
     # Gets all possible experiments.
     experiments = variableUnion(connection_vars, lidar_vars, reward_vars, action_vars, library=[])
 
-    print("Stable Baselines3 running on " + str(utils.get_device(device='auto')))
+    print("Stable Baselines3 running on " + str(utils.get_device(device=device)))
 
     for run in range(run_index, experiment_runs):
 
