@@ -83,6 +83,8 @@ if your action and reward structures are working properly.
 The TestBenches are simplified versions of some of the more complex pieces of code. 
 They are referenced throughout the comments.
 
+The best policy I have found so far is under TestBenches/BestPPOPolicy.zip and is discussed in the Extended_README.docx
+
 ### Disclaimer:
 
 This script has in no means been tested in all configurations, use at your own risk.
