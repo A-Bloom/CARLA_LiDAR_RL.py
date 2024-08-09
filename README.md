@@ -7,7 +7,7 @@ and avoid obstacles using only 2D LiDAR observations in the CARLA simulator.
 It is built in a way to let you design complex experiments and have the code run all of them in sequence 
 and log everything for you.
 
-[See it in Action!](https://youtu.be/x7HeYeD4Tzs)
+[See it in Action!](https://youtu.be/6tmK3yuiLLE)
 
 ### Setup:
 
